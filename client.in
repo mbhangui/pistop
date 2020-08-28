@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+# $Log: client.in,v $
+# Revision 1.1  2020-08-28 17:19:32+05:30  Cprogrammer
+# Initial revision
+#
+#
+# $Id: client.in,v 1.1 2020-08-28 17:19:32+05:30 Cprogrammer Exp mbhangui $
+#
+
+do_umount()
+{
+    count=1
+    systemctl stop mpd.service autofs.service
+    if [ -d /var/lib/mpd/MDrive ] ; then
+        while true
+        do
+            umount /var/lib/mpd/MDrive
+            if [ $? -eq 0 -o $count -eq 60 ] ; then
+                break
+            fi
+            count=`expr $count + 1`
+            sleep 1
+        done
+    fi
+}
+
+if [ "$1" != "local" ] ; then
+    count=1
+    mpd_was_down=0
+    autofs_was_down=0
+    while true
+    do
+        systemctl status autofs.service >/dev/null 2>&1
+        if [ $? -ne 0 ] ; then
+            autofs_was_down=1
+            systemctl start autofs.service
+        else
+            if [ $autofs_was_down -eq 1 ] ; then
+                echo "started automount filesystems"
+                autofs_was_down=0
+            fi
+            systemctl status mpd.service >/dev/null 2>&1
+            if [ $? -ne 0 ] ; then
+                # trigger autofs to mount MDrive
+                mpd_was_down=1
+                systemctl start mpd.service
+            else
+                if [ $mpd_was_down -eq 1 ] ; then
+                    echo "started music player daemon"
+                    mpd_was_down=0
+                fi
+                break
+            fi
+        fi
+        if [ $count -eq 60 ] ; then
+            echo "Giving up..."
+            svc -dx /service/fclient
+            systemctl stop autofs
+            umount /var/lib/mpd/MDrive
+            break
+        fi
+        sleep 20
+        count=`expr $count + 1`
+    done
+    if [ -x /var/lib/mpd/MDrive/bin/boot_sound ] ; then
+        /var/lib/mpd/MDrive/bin/boot_sound >/dev/null 2>&1
+    fi
+    echo "Waiting for poweroff"
+    echo wait 1>&7
+    /bin/cat <&6
+    echo "PI4 Powered off [$POWER_OFF]"
+    if [ -n "$POWER_OFF" ] ; then
+        /sbin/poweroff
+    else
+        do_umount
+    fi
+else
+    sleep 20
+fi

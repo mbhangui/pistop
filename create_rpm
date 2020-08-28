@@ -1,0 +1,166 @@
+#!/bin/sh
+#
+# $Log: create_rpm,v $
+# Revision 1.1  2020-08-28 17:20:13+05:30  Cprogrammer
+# Initial revision
+#
+#
+# $Id: create_rpm,v 1.1 2020-08-28 17:20:13+05:30 Cprogrammer Exp mbhangui $
+#
+version=$(cat conf-version)
+
+verbose=0
+while test $# -gt 0; do
+    case "$1" in
+    -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
+	;;
+    *) optarg=
+	;;
+    esac
+
+    case "$1" in
+    --verbose)
+	verbose=1
+    ;;
+    --release=*)
+	release=$optarg
+    ;;
+    *)
+    echo "invalid option [$1]"
+    read key
+    usage 1
+    ;;
+    esac
+
+    shift
+done
+
+if test -f $HOME/.rpmmacros
+then
+	topdir=`grep ^%_topdir $HOME/.rpmmacros | awk '{print $2}'`
+	if test -n "$topdir"
+	then
+		rpmbuild=$topdir
+	else
+		rpmbuild=$HOME/rpmbuild
+	fi
+else
+	rpmbuild=$HOME/rpmbuild
+fi
+
+copy_src=0
+echo -n "Copy Source Files - "
+read key
+if [ " $key" = " y" -o " $key" = " Y" ] ; then
+	copy_src=1
+fi
+
+make -s pistop.spec
+if [ $? -ne 0 ] ; then
+	echo "make failed" 1>&2
+	exit 0
+fi
+
+if [ $copy_src -eq 1 ] ; then
+	if [ ! -d ../stage ] ; then
+		mkdir ../stage
+	fi
+	if [ $? -ne 0 ] ; then
+		exit 1
+	fi
+	# /usr/local/src
+	cd ..
+	echo "Preparing pistop-"$version""
+	/bin/cp -rp pistop stage/pistop-"$version"
+	# /usr/local/src/stage/pistop-$version
+	cd stage/pistop-$version
+	echo "Cleaning pistop-"$version""
+	make -s clean
+	make -s distclean
+	/bin/rm -rf autom4te.cache .deps src/config.log
+	# /usr/local/src/stage/
+	cd ..
+	echo "Archiving pistop-"$version".tar.gz in `pwd`"
+	tar \
+		--exclude="pistop-$version/.git" \
+		--exclude="pistop-$version/debian"  \
+		--exclude="pistop-$version/misc"  \
+		--exclude="pistop-$version/RCS" \
+		-cf - pistop-"$version" \
+		| gzip -c > $rpmbuild/SOURCES/pistop-"$version".tar.gz
+	/bin/rm -rf pistop-"$version"
+fi
+
+dist=`uname -r |cut -d . -f4`
+if [ -z "$release" ] ; then
+	if [ -f /usr/bin/pistop ] ; then
+		mdist=$(rpm -qf /usr/bin/pistop|cut -d- -f3|cut -d. -f3)
+		if [ " $dist" = " $mdist" ] ; then
+			mversion=$(rpm -qf /usr/bin/pistop|cut -d- -f2)
+			if [ "$mversion" = "$version" ] ; then
+				release=$(rpm -qf /usr/bin/pistop | cut -d- -f3 | cut -d. -f2)
+				release=$(expr $release + 1)
+			else
+				release=1
+			fi
+		else
+			release=1
+		fi
+	else
+		release=1
+	fi
+fi
+
+# /usr/local/src/
+cd ..
+echo -n "Build RPM for pistop-"$version"-1."$release" (Y/N) - "
+read key
+if [ " $key" = " Y" -o " $key" = " y" ] ; then
+	tmprel=`cat pistop/conf-release 2>/dev/null`
+	if [ ! " $tmprel" = " 1.$release" ] ; then
+		cd pistop
+		echo 1.$release > conf-release
+		make -s pistop.spec
+		cp pistop.spec /tmp
+		make -C debian -s
+		cd ../..
+	else
+		cp pistop/pistop.spec /tmp
+	fi
+	build_arch=`rpmbuild --showrc|grep "^build arch" | awk '{print $4}'`
+	if [ $verbose -eq 0 ] ; then
+		echo "rpmbuild -ba --clean --quiet /tmp/pistop.spec"
+		rpmbuild -ba --clean --quiet /tmp/pistop.spec
+	else
+		echo "rpmbuild -ba --clean --quiet /tmp/pistop.spec"
+		rpmbuild -ba --clean /tmp/pistop.spec
+	fi
+	if [ $? -eq 0 ] ; then
+		/bin/rm /tmp/pistop.spec
+		rpm --addsign $rpmbuild/RPMS/$build_arch/pistop-"$version"-"1.$release".$dist.$build_arch.rpm
+		echo -n "RPM lint for pistop-"$version"-1."$release" (Y/N) - "
+		read key
+		if [ " $key" = " Y" -o " $key" = " y" ] ; then
+			(
+			echo pistop
+			rpmlint $rpmbuild/RPMS/$build_arch/pistop-"$version"-"1.$release".$dist.$build_arch.rpm
+			echo ------------------------
+			echo pistop-"$version"-"1.$release".$dist.src.rpm
+			rpmlint $rpmbuild/SRPMS/pistop-"$version"-"1.$release".$dist.src.rpm
+			echo ------------------------
+			) 2>&1 | less
+		fi
+	else
+		/bin/rm /tmp/pistop.spec
+	fi
+else
+	/bin/rm -rf /tmp/pistop-"$version"
+fi
+
+if [ $copy_src -eq 1 ] ; then
+	echo -n "Remove Source (Y/N) - "
+	read key
+	if [ " $key" = " Y" -o " $key" = " y" ] ; then
+		/bin/rm -f $rpmbuild/SOURCES/pistop-"$version".tar.gz
+	fi
+fi

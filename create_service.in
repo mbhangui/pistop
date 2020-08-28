@@ -1,0 +1,147 @@
+#!/bin/sh
+#
+# $Log: create_service.in,v $
+# Revision 1.1  2020-08-28 17:17:26+05:30  Cprogrammer
+# Initial revision
+#
+#
+# $Id: create_service.in,v 1.1 2020-08-28 17:17:26+05:30 Cprogrammer Exp mbhangui $
+#
+
+add_service()
+{
+	if [ $# -ne 2 ] ; then
+		(
+		echo -n "USAGE: create_service --servicedir=path "
+		echo -n "--service_name=fclient|fserver --host=host "
+		echo -n "--port=port --add-service"
+		echo
+		) 1>&2
+		return 1
+	fi
+	if [ ! -d $logdir ] ; then
+		mkdir -p $logdir
+		chown qmaill:nofiles $logdir
+	fi
+	mkdir -p $servicedir/$service_name/log
+	(
+		echo "#!/bin/sh"
+		echo "exec /usr/bin/setuidgid qmaill \\"
+		if [ -f /usr/sbin/multilog ] ; then
+			echo "/usr/sbin/multilog t $logdir/$service_name"
+		else
+			echo "/usr/bin/multilog t $logdir/$service_name"
+		fi
+	) > $servicedir/$service_name/log/run
+	chmod +x $servicedir/$service_name/log/run
+
+	mkdir -p $servicedir/$service_name/variables
+	echo $1  > $servicedir/$service_name/variables/HOST
+	echo $2  > $servicedir/$service_name/variables/PORT
+	echo 300 > $servicedir/$service_name/variables/TIMEOUT
+	echo 10  > $servicedir/$service_name/variables/MAXDAEMONS
+	if [ " $service_name" = " fclient" ] ; then
+		(
+		(
+		echo "#!/bin/sh"
+		echo "# $prog_args"
+		echo "exec 2>&1"
+		echo 
+		echo "HOST=\`cat $servicedir/fclient/variables/HOST\`"
+		echo "PORT=\`cat $servicedir/fclient/variables/PORT\`"
+		echo "</dev/tcp/\$HOST/\$PORT"
+		echo "if [ \$? -eq 0 ] ; then"
+		echo "exec /usr/bin/envdir $servicedir/fclient/variables sh -c \\"
+		echo "    \"sleep 5;exec /usr/bin/tcpclient -v -D -H -R -t \\"
+		echo "    \\\$TIMEOUT \\\$HOST \\\$PORT @prefix@/libexec/pistop/client nothing 2>&1\""
+		echo "else"
+		echo "exec /usr/bin/envdir $servicedir/fclient/variables sh -c \\"
+		echo "    \"sleep 10; @prefix@/libexec/pistop/client local 2>&1\""
+		echo "fi"
+		) > $servicedir/$service_name/run
+	elif [ " $service_name" = " fserver" ] ; then
+		(
+		echo "#!/bin/sh"
+		echo "exec 2>&1"
+		echo "exec /usr/bin/envdir $servicedir/fserver/variables sh -c \""
+		echo "    exec /usr/bin/tcpserver -v -D -H -R -l 0 \\"
+		echo "    -c $servicedir/fserver/variables/MAXDAEMONS -o -b \\\$MAXDAEMONS \\"
+		echo "    -u 0 -g 0 \\\$HOST \\\$PORT \\"
+		echo "    @prefix@/libexec/pistop/server\""
+		) > $servicedir/$service_name/run
+	fi
+	chmod +x $servicedir/$service_name/run
+}
+
+del_service()
+{
+	if [ ! -d $servicedir/$service_name ] ; then
+		return 0
+	fi
+	mv $servicedir/$service_name $servicedir/."$service_name"
+	svc -dx $servicedir/."$service_name" $servicedir/."$service_name"/log > /dev/null
+	sleep 5
+	/bin/rm -rf $servicedir/."$service_name" $servicedir/."$service_name"/log > /dev/null
+}
+
+usage()
+{
+echo "Usage: create_service [OPTIONS]"
+echo "create_service --servicedir=dir --service_name=name --host=host --port=port --add-service"
+echo "  or"
+echo "create_service --servicedir=dir --service_name=name --del-service"
+exit $1
+}
+
+################################# Main ##################################
+if test $# -eq 0; then
+    usage 1
+fi
+logdir=/var/log/svc
+servicedir=/service
+prog_args="$0 $*"
+RCSID="# \$Id: create_service.in,v 1.1 2020-08-28 17:17:26+05:30 Cprogrammer Exp mbhangui $"
+while test $# -gt 0; do
+    case "$1" in
+    -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
+	;;
+    *) optarg=
+	;;
+    esac
+
+    case "$1" in
+    --servicedir=*)
+    servicedir=$optarg
+    ;;
+    --service_name=*)
+	service_name=$optarg
+	if [ " $service_name" != " fclient" -a " $service_name" != " fserver" ] ; then
+		echo "service_name should be fclient or fserver" 1>&2
+	fi
+    ;;
+	--host=*)
+	host=$optarg
+	;;
+	--port=*)
+	port=$optarg
+	;;
+
+    --add-service)
+	if [ -z "$servicedir" -o -z "$service_name" -o -z "$port" -o -z "$host" ] ; then
+		echo "You must specify servicedir, service_name, port, host" 1>&2
+		usage
+	else
+		add_service $host $port
+	fi
+    ;;
+    --del-service)
+	del_service
+    ;;
+    *)
+    echo "invalid option [$1]"
+    read key
+    usage 1
+    ;;
+    esac
+    shift
+done

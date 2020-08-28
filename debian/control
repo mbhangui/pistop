@@ -1,0 +1,20 @@
+Source: pistop
+Section: sound
+Priority: optional
+Maintainer: Manvendra Bhangui <pistop@indimail.org>
+Build-Depends: cdbs, debhelper (>= 9), gcc, g++, automake, autoconf, m4, gawk, libqmail-dev
+Standards-Version: 4.5.0
+Homepage: https://github.com/mbhangui/pistop
+
+Package: pistop
+Architecture: any
+Pre-Depends: daemontools, ucspi-tcp
+Depends: coreutils, ${shlibs:Depends}, ${misc:Depends}
+Description: Start/Stop services on file server startup/shutdown
+ pistop is a package that provides two services fclient and fserver.
+ .
+ fclient is a svscan service that monitors the uptime of a server running
+ fserver service on port 5555. shutdown is detected by a socket close
+ .
+ fserver is a svscan service that provides a socket on port 5555 and offers
+ rudimentary commands.

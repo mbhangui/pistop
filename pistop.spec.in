@@ -1,0 +1,94 @@
+%undefine _missing_build_ids_terminate_build
+%global _unpackaged_files_terminate_build 1
+%global debug_package %{nil}
+
+%if %{defined _project}
+# define if building on openSUSE build service
+%global build_on_obs       1
+%global reconfigure_mode   0
+%else
+%define _project           local
+%global build_on_obs       0
+%global reconfigure_mode   0
+%global _hardened_build    1
+%endif
+%global _prefix            /usr
+%global sysconfdir         @pistopsysconfdir@
+%global logdir             /var/log/svc/mpdev
+
+Name: pistop
+Version: @version@
+Release: @release@%{?dist}
+Summary: Start/Stop services on file server startup/shutdown
+%if %build_on_obs == 1
+License: GPL-2.0
+%else
+License: GPLv2
+%endif
+URL: https://github.com/mbhangui/pistop
+Source0: http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
+
+%if %build_on_obs == 1
+%if 0%{?suse_version}
+BuildRequires: -post-build-checks
+#!BuildIgnore: post-build-checks  
+%endif
+%endif
+BuildRequires: libqmail-devel libqmail
+Requires: user(qmaill)
+Requires: group(nofiles)
+Requires: daemtools ucspi-tcp coreutils
+
+%description
+pistop is a package that provides two services fclient and fserver.
+
+fclient is a svscan service that monitors the uptime of a server running
+fserver service on port 5555. shutdown is detected by a socket close
+
+fserver is a svscan service that provides a socket on port 5555 and offers
+rudimentary commands.
+
+%prep
+%autosetup
+
+%build
+%configure --prefix=%{_prefix} --libexecdir=%{_prefix}/libexec/pistop
+%{__make} -s %{?_smp_mflags}
+(
+echo "---------------- INFORMATION ------------------------"
+echo target         %_target
+echo target_alias   %_target_alias
+echo target_cpu     %_target_cpu
+echo target_os      %_target_os
+echo target_vendor  %_target_vendor
+echo Project        %{_project}
+echo Building %{name}-%{version}-%{release} Build %{_build} OS %{_os}
+echo "------------------------------------------------------"
+) > %{name}-rpm.info
+(
+echo "NAME=%{name}"
+echo "Description=\"Start/Stop services on file server startup/shutdown\""
+echo "PISTOP_version="%{version}""
+echo "ID=%{name}"
+echo "HOME_URL=\"https://github.com/mbhangui/pistop\""
+echo "PACKAGE_BUGREPORT=\"Manvendra Bhangui pistop@indimail.org\""
+) > %{name}-release
+
+%install
+rm -rf $RPM_BUILD_ROOT
+%{__make} -s DESTDIR=%{buildroot} install-strip
+%{__mkdir_p} %{buildroot}%{sysconfdir}
+install -m 0644 %{name}-rpm.info %{buildroot}%{sysconfdir}/%{name}-rpm.info
+install -m 0644 %{name}-release %{buildroot}%{sysconfdir}/%{name}-release
+
+%files
+%ghost %dir %attr(0755,qmaill,nofiles)  %{logdir}
+%ghost      %attr(-,qmaill,nofiles)     %{logdir}/*
+%license COPYING
+%attr(755,root,root)                    %{_prefix}/libexec/pistop/client
+%attr(755,root,root)                    %{_prefix}/libexec/pistop/create_service
+%attr(755,root,root)                    %{_prefix}/libexec/pistop/server
+%attr(644,root,root) %config(noreplace) %{sysconfdir}/%{name}-release
+%attr(644,root,root) %config(noreplace) %{sysconfdir}/%{name}-rpm.info
+
+%changelog

@@ -1,0 +1,11 @@
+#!/bin/sh
+if [ ! -f ./configure -o ! -f Makefile -o ! -f Makefile.in ] ; then
+  autoreconf -fiv
+fi
+if [ ! -f conf-release ] ; then
+	echo 1.1 > conf-release
+fi
+prefix=/usr
+./configure \
+  --prefix=$prefix \
+  --libexecdir=$prefix/libexec/pistop

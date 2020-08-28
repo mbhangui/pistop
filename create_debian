@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# $Log: create_debian,v $
+# Revision 1.1  2020-08-28 17:19:54+05:30  Cprogrammer
+# Initial revision
+#
+#
+# $Id: create_debian,v 1.1 2020-08-28 17:19:54+05:30 Cprogrammer Exp mbhangui $
+#
+if [ ! -f /etc/debian_version ] ; then
+	echo "Not a debian or ubuntu distribution" 1>&2
+	exit 1
+fi
+make -s -C debian
+pistop_version=$(cat conf-version)
+/bin/rm -rf $HOME/stage/pistop
+mkdir -p    $HOME/stage/pistop-$pistop_version
+cp -rp .    $HOME/stage/pistop-$pistop_version
+cd          $HOME/stage/pistop-$pistop_version
+dpkg-buildpackage -tc -b -d
+/bin/rm -rf $HOME/stage/pistop-$pistop_version
+ls -lt $HOME/stage
