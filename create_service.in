@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.3  2020-08-28 22:44:00+05:30  Cprogrammer
+# create shutdown script for fserver service
+#
 # Revision 1.2  2020-08-28 22:05:45+05:30  Cprogrammer
 # fixed syntax error
 #
@@ -8,7 +11,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.2 2020-08-28 22:05:45+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.3 2020-08-28 22:44:00+05:30 Cprogrammer Exp mbhangui $
 #
 
 add_service()
@@ -53,12 +56,12 @@ add_service()
 		echo "PORT=\`cat $servicedir/fclient/variables/PORT\`"
 		echo "</dev/tcp/\$HOST/\$PORT"
 		echo "if [ \$? -eq 0 ] ; then"
-		echo "exec /usr/bin/envdir $servicedir/fclient/variables sh -c \\"
-		echo "    \"sleep 5;exec /usr/bin/tcpclient -v -D -H -R -t \\"
-		echo "    \\\$TIMEOUT \\\$HOST \\\$PORT @prefix@/libexec/pistop/client start 2>&1\""
+		echo "    exec /usr/bin/envdir $servicedir/fclient/variables sh -c \\"
+		echo "        \"sleep 5;exec /usr/bin/tcpclient -v -D -H -R -t \\"
+		echo "        \\\$TIMEOUT \\\$HOST \\\$PORT @prefix@/libexec/pistop/client start 2>&1\""
 		echo "else"
-		echo "exec /usr/bin/envdir $servicedir/fclient/variables sh -c \\"
-		echo "    \"sleep 10; @prefix@/libexec/pistop/client sleep 2>&1\""
+		echo "    exec /usr/bin/envdir $servicedir/fclient/variables sh -c \\"
+		echo "        \"sleep 10; @prefix@/libexec/pistop/client sleep 2>&1\""
 		echo "fi"
 		) > $servicedir/$service_name/run
 	elif [ " $service_name" = " fserver" ] ; then
@@ -71,6 +74,13 @@ add_service()
 		echo "    -u 0 -g 0 \\\$HOST \\\$PORT \\"
 		echo "    @prefix@/libexec/pistop/server\""
 		) > $servicedir/$service_name/run
+		(
+		echo "#!/bin/sh"
+		echo "if [ -f /tmp/dietpiserver.pid ] ; then"
+		echo "    kill \`cat /tmp/dietpiserver.pid\`"
+		echo "fi"
+		echo "exit 0"
+		)
 	fi
 	chmod +x $servicedir/$service_name/run
 }
@@ -107,7 +117,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.2 2020-08-28 22:05:45+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.3 2020-08-28 22:44:00+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
     case "$1" in
     -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
