@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/select.h>
-#include <sys/mount.h>
 #include <subfd.h>
 #include <scan.h>
 #include <stralloc.h>
@@ -149,78 +148,6 @@ timeoutwrite(t, fd, buf, len)
 	return -1;
 }
 
-static stralloc flagpath = { 0 };
-static stralloc mount_src = { 0 };
-
-void
-try_mount(int timeout)
-{
-	char           *mountpoint, *mountdir, *host;
-	char            respbuf[128];
-
-	if (!(mountpoint = env_get("MOUNTPOINT"))) {
-		errf("env variable MOUNTPOINT not defined\n");
-		_exit(111);
-	} else
-	if (!(mountdir = env_get("MOUNTDIR"))) {
-		errf("env variable MOUNTDIR not defined\n");
-		_exit(111);
-	} else
-	if (!(host = env_get("HOST"))) {
-		errf("env variable HOST not defined\n");
-		_exit(111);
-	}
-	if (!stralloc_copys(&flagpath, mountpoint))
-		die_nomem();
-	else
-	if (!stralloc_catb(&flagpath, ".clementine", 11))
-		die_nomem();
-	else
-	if (!stralloc_0(&flagpath))
-		die_nomem();
-
-	if (!stralloc_copys(&mount_src, host))
-		die_nomem();
-	else
-	if (!stralloc_append(&mount_src, ":"))
-		die_nomem();
-	else
-	if (!stralloc_cats(&mount_src, mountdir))
-		die_nomem();
-	else
-	if (!stralloc_0(&mount_src))
-		die_nomem();
-
-	for (;;) {
-		if (!access(flagpath.s, F_OK))
-			break;
-#if 0
-		err("Restarting firewall on ");
-		err(host);
-		errf("\n");
-		if ((r = timeoutwrite(timeout, 7, "restartfw\n", 10)) < 0)
-			die_write();
-		r = timeoutread(timeout, 6, respbuf, sizeof(respbuf));
-		if (r == -1) {
-			if (errno == error_timeout)
-				die_alarm();
-		}
-		if (r < 0)
-			die_read();
-		if (!r) {
-			execl("/sbin/shutdown", "-r", "now", (char *) 0);
-			strerr_die2sys(111, FATAL, "execl: /sbin/shutdown -r now: ");
-		}
-#endif
-		errf("Mounting filesystem $HOST:$MOUNTDIR $MOUNTPOINT\n");
-		/*- mount $HOST:$MOUNTDIR $MOUNTPOINT*/
-		/*- if (mount(mount_src.s, mountpoint, "nfs", 0, "vers=4,soft,timeo=5,retry=1") == -1) -*/
-		if (mount(mount_src.s, mountpoint, "nfs", 0, 0) == -1)
-			strerr_die6sys(111, FATAL, "mount: ", mount_src.s, " ", mountpoint, ": ");
-	}
-	return;
-}
-
 int
 main(int argc, char **argv)
 {
@@ -240,14 +167,13 @@ main(int argc, char **argv)
 			break;
 		}
 	}
-	try_mount(dataTimeout);
-	if ((r = timeoutwrite(timeout, 7, "wait\n", 5)) < 0)
-		die_write();
 	if (dataTimeout == -1) {
 		if (!(ptr = env_get("DATA_TIMEOUT")))
 			ptr = "1800";
 		scan_int(ptr, &dataTimeout);
 	}
+	if ((r = timeoutwrite(dataTimeout, 7, "wait\n", 5)) < 0)
+		die_write();
 	if (dataTimeout > 0)
 		timeout.tv_sec = (dataTimeout > SELECTTIMEOUT) ? dataTimeout : SELECTTIMEOUT;
 	else

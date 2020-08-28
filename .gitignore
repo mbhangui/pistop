@@ -76,3 +76,7 @@ config.log
 config.status
 server
 stamp-h1
+debian/debian.tar.gz
+debian/pistop.dsc
+debian/pistop.install
+debian/rules

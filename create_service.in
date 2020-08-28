@@ -1,11 +1,14 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.2  2020-08-28 22:05:45+05:30  Cprogrammer
+# fixed syntax error
+#
 # Revision 1.1  2020-08-28 17:17:26+05:30  Cprogrammer
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.1 2020-08-28 17:17:26+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.2 2020-08-28 22:05:45+05:30 Cprogrammer Exp mbhangui $
 #
 
 add_service()
@@ -42,7 +45,6 @@ add_service()
 	echo 10  > $servicedir/$service_name/variables/MAXDAEMONS
 	if [ " $service_name" = " fclient" ] ; then
 		(
-		(
 		echo "#!/bin/sh"
 		echo "# $prog_args"
 		echo "exec 2>&1"
@@ -53,10 +55,10 @@ add_service()
 		echo "if [ \$? -eq 0 ] ; then"
 		echo "exec /usr/bin/envdir $servicedir/fclient/variables sh -c \\"
 		echo "    \"sleep 5;exec /usr/bin/tcpclient -v -D -H -R -t \\"
-		echo "    \\\$TIMEOUT \\\$HOST \\\$PORT @prefix@/libexec/pistop/client nothing 2>&1\""
+		echo "    \\\$TIMEOUT \\\$HOST \\\$PORT @prefix@/libexec/pistop/client start 2>&1\""
 		echo "else"
 		echo "exec /usr/bin/envdir $servicedir/fclient/variables sh -c \\"
-		echo "    \"sleep 10; @prefix@/libexec/pistop/client local 2>&1\""
+		echo "    \"sleep 10; @prefix@/libexec/pistop/client sleep 2>&1\""
 		echo "fi"
 		) > $servicedir/$service_name/run
 	elif [ " $service_name" = " fserver" ] ; then
@@ -97,10 +99,15 @@ exit $1
 if test $# -eq 0; then
     usage 1
 fi
+ID=$(id -u)
+if [ $ID -ne 0 ] ; then
+  echo "You are not root" 1>&2
+  exit 1
+fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.1 2020-08-28 17:17:26+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.2 2020-08-28 22:05:45+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
     case "$1" in
     -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`

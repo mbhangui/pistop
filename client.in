@@ -1,11 +1,17 @@
 #!/bin/sh
 #
 # $Log: client.in,v $
+# Revision 1.3  2020-08-28 22:19:26+05:30  Cprogrammer
+# set trap after mpd, automount service startup
+#
+# Revision 1.2  2020-08-28 22:05:32+05:30  Cprogrammer
+# terminate cat on svc -d
+#
 # Revision 1.1  2020-08-28 17:19:32+05:30  Cprogrammer
 # Initial revision
 #
 #
-# $Id: client.in,v 1.1 2020-08-28 17:19:32+05:30 Cprogrammer Exp mbhangui $
+# $Id: client.in,v 1.3 2020-08-28 22:19:26+05:30 Cprogrammer Exp mbhangui $
 #
 
 do_umount()
@@ -25,7 +31,9 @@ do_umount()
     fi
 }
 
-if [ "$1" != "local" ] ; then
+if [ "$1" = "sleep" ] ; then
+    sleep 20
+else
     count=1
     mpd_was_down=0
     autofs_was_down=0
@@ -63,18 +71,22 @@ if [ "$1" != "local" ] ; then
         sleep 20
         count=`expr $count + 1`
     done
+    trap : SIGTERM SIGINT
     if [ -x /var/lib/mpd/MDrive/bin/boot_sound ] ; then
         /var/lib/mpd/MDrive/bin/boot_sound >/dev/null 2>&1
     fi
     echo "Waiting for poweroff"
     echo wait 1>&7
-    /bin/cat <&6
+    /bin/cat <&6 &
+    CAT_PID=$!
+    wait $CAT_PID
+    if [[ $? -gt 128 ]] ; then
+        kill $CAT_PID
+    fi
     echo "PI4 Powered off [$POWER_OFF]"
     if [ -n "$POWER_OFF" ] ; then
         /sbin/poweroff
     else
         do_umount
     fi
-else
-    sleep 20
 fi

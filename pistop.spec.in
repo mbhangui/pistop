@@ -37,7 +37,7 @@ BuildRequires: -post-build-checks
 BuildRequires: libqmail-devel libqmail
 Requires: user(qmaill)
 Requires: group(nofiles)
-Requires: daemtools ucspi-tcp coreutils
+Requires: daemontools ucspi-tcp coreutils
 
 %description
 pistop is a package that provides two services fclient and fserver.

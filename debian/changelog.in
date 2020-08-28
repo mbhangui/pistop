@@ -1,3 +1,5 @@
 pistop (@version@-@release@) unstable; urgency=medium
 
   * Initial Release.
+  * fixed syntax error in create_service
+  * terminate cat command on SIGTERM
