@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: client.in,v $
+# Revision 1.6  2020-08-29 17:12:27+05:30  Cprogrammer
+# kill cat always
+#
 # Revision 1.5  2020-08-29 16:00:49+05:30  Cprogrammer
 # use signal names compatible with Bourne Shell
 #
@@ -17,7 +20,7 @@
 # Initial revision
 #
 #
-# $Id: client.in,v 1.5 2020-08-29 16:00:49+05:30 Cprogrammer Exp mbhangui $
+# $Id: client.in,v 1.6 2020-08-29 17:12:27+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
@@ -99,9 +102,7 @@ else
         CAT_PID=$!
         exec 6<&-
         wait $CAT_PID
-        if [[ $? -gt 128 ]] ; then
-            kill $CAT_PID
-        fi
+        kill $CAT_PID 2>/dev/null
     fi
     echo "PI4 Powered off [$POWER_OFF]"
     if [ -n "$POWER_OFF" ] ; then

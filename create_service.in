@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.5  2020-08-29 17:12:50+05:30  Cprogrammer
+# fixed shutdown script
+#
 # Revision 1.4  2020-08-29 16:01:45+05:30  Cprogrammer
 # use bash for run file
 #
@@ -14,7 +17,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.4 2020-08-29 16:01:45+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.5 2020-08-29 17:12:50+05:30 Cprogrammer Exp mbhangui $
 #
 
 add_service()
@@ -79,13 +82,12 @@ add_service()
 		) > $servicedir/$service_name/run
 		(
 		echo "#!/bin/sh"
-		echo "if [ -f /tmp/dietpiserver.pid ] ; then"
-		echo "    kill \`cat /tmp/dietpiserver.pid\`"
-		echo "fi"
+		echo "killall /usr/libexec/pistop/server"
 		echo "exit 0"
-		)
+		) > $servicedir/$service_name/shutdown
 	fi
 	chmod +x $servicedir/$service_name/run
+	chmod +x $servicedir/$service_name/shutdown
 }
 
 del_service()
@@ -120,7 +122,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.4 2020-08-29 16:01:45+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.5 2020-08-29 17:12:50+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
     case "$1" in
     -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`

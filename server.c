@@ -1,5 +1,8 @@
 /*
  * $Log: server.c,v $
+ * Revision 1.3  2020-08-29 17:12:58+05:30  Cprogrammer
+ * removed creation of /tmp/dietpiserver.pid
+ *
  * Revision 1.2  2020-08-29 16:02:07+05:30  Cprogrammer
  * change client message
  *
@@ -65,7 +68,7 @@ static char     strnum[FMT_ULONG];
 int
 main(int argc, char **argv)
 {
-	int             opt, length, dataTimeout = -1, retval, fd;
+	int             opt, length, dataTimeout = -1, retval;
 	struct timeval  timeout;
 	struct timeval *tptr;
 	time_t          last_timeout;
@@ -81,12 +84,6 @@ main(int argc, char **argv)
 			break;
 		}
 	}
-	if ((fd = open_trunc("/tmp/dietpiserver.pid")) == -1)
-		strerr_die2sys(111, FATAL, "/tmp/dietpiserver.pid: ");
-	if (write(fd, strnum, fmt_ulong(strnum, getpid())) == -1)
-		strerr_die2sys(111, FATAL, "write: /tmp/dietpiserver.pid: ");
-	if (close(fd) == -1)
-		strerr_die2sys(111, FATAL, "write: /tmp/dietpiserver.pid: ");
 	if (dataTimeout == -1) {
 		if (!(ptr = env_get("DATA_TIMEOUT")))
 			ptr = "1800";
