@@ -44,9 +44,9 @@ build-stamp:
 	$(MAKE) -s DESTDIR=$(DESTDIR)
 	( \
 	echo NAME=pistop; \
-	echo Description=\"mpd event watcher\"; \
-	echo MPDWATCH_VERSION=$(version); \
-	echo ID=indimail-spamfilter; \
+	echo Description=\"Start/Stop services on file server startup/shutdown\"; \
+	echo PISTOP_VERSION=$(version); \
+	echo ID=pistop; \
 	echo HOME_URL="https://github.com/mbhangui/pistop"; \
 	echo PACKAGE_BUGREPORT=\"Manvendra Bhangui pistop@indimail.org\"; \
 	) > pistop-release

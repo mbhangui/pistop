@@ -4,7 +4,7 @@ Binary: pistop
 Architecture: any
 Version: @version@-@release@
 Maintainer: Manvendra Bhangui <pistop@indimail.org>
-Homepage: http://www.indimail.org
+Homepage: https://github.com/mbhangui/pistop
 Debtransform-Release: 1
 Debtransform-Files-Tar: debian.tar.gz
 Debtransform-Tar: pistop-@version@.tar.gz
