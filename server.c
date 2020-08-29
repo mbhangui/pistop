@@ -1,5 +1,8 @@
 /*
  * $Log: server.c,v $
+ * Revision 1.2  2020-08-29 16:02:07+05:30  Cprogrammer
+ * change client message
+ *
  * Revision 1.1  2020-08-28 20:37:41+05:30  Cprogrammer
  * Initial revision
  *
@@ -128,7 +131,7 @@ main(int argc, char **argv)
 			if ((length = read(0, buffer, sizeof(buffer))) == -1)
 				strerr_die2sys(111, FATAL, "read-network: ");
 			if (!length) {
-				if (substdio_puts(subfderr, "shutting down\n") == -1)
+				if (substdio_puts(subfderr, "client dropped connection\n") == -1)
 					strerr_die2sys(111, FATAL, "write: ");
 				if (substdio_flush(subfderr) == -1)
 					strerr_die2sys(111, FATAL, "write: ");

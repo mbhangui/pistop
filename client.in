@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: client.in,v $
+# Revision 1.5  2020-08-29 16:00:49+05:30  Cprogrammer
+# use signal names compatible with Bourne Shell
+#
 # Revision 1.4  2020-08-29 12:09:36+05:30  Cprogrammer
 # handle case when started as a session leader
 #
@@ -14,7 +17,7 @@
 # Initial revision
 #
 #
-# $Id: client.in,v 1.4 2020-08-29 12:09:36+05:30 Cprogrammer Exp mbhangui $
+# $Id: client.in,v 1.5 2020-08-29 16:00:49+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
@@ -40,7 +43,7 @@ do_umount()
     fi
 }
 
-trap suicide SIGTERM SIGINT
+trap suicide TERM SIGINT
 
 if [ "$1" = "sleep" ] ; then
     sleep 20
@@ -91,7 +94,7 @@ else
     if [ -x /usr/bin/setsid -a -n "$sessions" ] ; then
         /bin/cat <&6
     else
-        trap : SIGTERM SIGINT
+        trap : TERM INT
         /bin/cat <&6 &
         CAT_PID=$!
         exec 6<&-
