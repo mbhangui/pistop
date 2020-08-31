@@ -8,3 +8,4 @@ Release 1.0 Start 28/08/2020
 04. fixed shutdown script
 31/08/2020
 05. Added code to do backup in fserver
+06. redo logic to kill background jobs

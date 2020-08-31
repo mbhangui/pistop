@@ -1,5 +1,8 @@
 /*
  * $Log: server.c,v $
+ * Revision 1.4  2020-08-31 21:18:21+05:30  Cprogrammer
+ * fixed compiler warnings
+ *
  * Revision 1.3  2020-08-29 17:12:58+05:30  Cprogrammer
  * removed creation of /tmp/dietpiserver.pid
  *
@@ -63,7 +66,9 @@ sigterm()
 	_exit(1);
 }
 
+#ifdef DEBUG
 static char     strnum[FMT_ULONG];
+#endif
 
 int
 main(int argc, char **argv)
