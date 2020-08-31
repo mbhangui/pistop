@@ -3,3 +3,5 @@ pistop (@version@-@release@) unstable; urgency=medium
   * Initial Release.
   * fixed syntax error in create_service
   * terminate cat command on SIGTERM
+  * fixed shutdown script
+  * Added code to do backup in fserver

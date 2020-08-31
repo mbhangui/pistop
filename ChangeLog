@@ -4,3 +4,7 @@ Release 1.0 Start 28/08/2020
 01. Initial Release
 02. fixed syntax error in create_service
 03. terminate cat command on SIGTERM
+29/08/2020
+04. fixed shutdown script
+31/08/2020
+05. Added code to do backup in fserver

@@ -1,6 +1,12 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.7  2020-08-31 16:40:17+05:30  Cprogrammer
+# fixed shutdown script
+#
+# Revision 1.6  2020-08-31 12:22:40+05:30  Cprogrammer
+# added code to do backup during startup in fserver
+#
 # Revision 1.5  2020-08-29 17:12:50+05:30  Cprogrammer
 # fixed shutdown script
 #
@@ -17,7 +23,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.5 2020-08-29 17:12:50+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.7 2020-08-31 16:40:17+05:30 Cprogrammer Exp mbhangui $
 #
 
 add_service()
@@ -70,10 +76,19 @@ add_service()
 		echo "        \"sleep 10; @prefix@/libexec/pistop/client sleep 2>&1\""
 		echo "fi"
 		) > $servicedir/$service_name/run
+		> $servicedir/$service_name/variables/POWER_OFF
 	elif [ " $service_name" = " fserver" ] ; then
 		(
 		echo "#!/bin/sh"
 		echo "exec 2>&1"
+		echo
+		echo "if [ -n \"\$BACKUP\" -a -n \"\$DEST\" ] ; then"
+		echo "    mkdir -p \$DEST/backup"
+		echo "    for i in \$BACKUP"
+		echo "    do"
+		echo "        rsync -alptgomHE --delete \$DEST/\$i \$DEST/backup"
+		echo "    done"
+		echo "fi"
 		echo "exec /usr/bin/envdir $servicedir/fserver/variables sh -c \""
 		echo "    exec /usr/bin/tcpserver -v -D -H -R -l 0 \\"
 		echo "    -c $servicedir/fserver/variables/MAXDAEMONS -o -b \\\$MAXDAEMONS \\"
@@ -85,9 +100,9 @@ add_service()
 		echo "killall /usr/libexec/pistop/server"
 		echo "exit 0"
 		) > $servicedir/$service_name/shutdown
+		chmod +x $servicedir/$service_name/shutdown
 	fi
 	chmod +x $servicedir/$service_name/run
-	chmod +x $servicedir/$service_name/shutdown
 }
 
 del_service()
@@ -112,35 +127,35 @@ exit $1
 
 ################################# Main ##################################
 if test $# -eq 0; then
-    usage 1
+	usage 1
 fi
 ID=$(id -u)
 if [ $ID -ne 0 ] ; then
-  echo "You are not root" 1>&2
-  exit 1
+	echo "You are not root" 1>&2
+	exit 1
 fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.5 2020-08-29 17:12:50+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.7 2020-08-31 16:40:17+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
-    case "$1" in
-    -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
+	case "$1" in
+	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
 	;;
-    *) optarg=
+	*) optarg=
 	;;
-    esac
+	esac
 
-    case "$1" in
-    --servicedir=*)
-    servicedir=$optarg
-    ;;
-    --service_name=*)
+	case "$1" in
+	--servicedir=*)
+	servicedir=$optarg
+	;;
+	--service_name=*)
 	service_name=$optarg
 	if [ " $service_name" != " fclient" -a " $service_name" != " fserver" ] ; then
 		echo "service_name should be fclient or fserver" 1>&2
 	fi
-    ;;
+	;;
 	--host=*)
 	host=$optarg
 	;;
@@ -148,22 +163,22 @@ while test $# -gt 0; do
 	port=$optarg
 	;;
 
-    --add-service)
+	--add-service)
 	if [ -z "$servicedir" -o -z "$service_name" -o -z "$port" -o -z "$host" ] ; then
 		echo "You must specify servicedir, service_name, port, host" 1>&2
 		usage
 	else
 		add_service $host $port
 	fi
-    ;;
-    --del-service)
+	;;
+	--del-service)
 	del_service
-    ;;
-    *)
-    echo "invalid option [$1]"
-    read key
-    usage 1
-    ;;
-    esac
-    shift
+	;;
+	*)
+	echo "invalid option [$1]"
+	read key
+	usage 1
+	;;
+	esac
+	shift
 done

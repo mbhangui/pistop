@@ -1,6 +1,12 @@
 #!/bin/sh
 #
 # $Log: client.in,v $
+# Revision 1.8  2020-08-31 16:40:53+05:30  Cprogrammer
+# redo logic for killing background commands
+#
+# Revision 1.7  2020-08-31 12:21:31+05:30  Cprogrammer
+# fixed signal name for bourne shell
+#
 # Revision 1.6  2020-08-29 17:12:27+05:30  Cprogrammer
 # kill cat always
 #
@@ -20,11 +26,14 @@
 # Initial revision
 #
 #
-# $Id: client.in,v 1.6 2020-08-29 17:12:27+05:30 Cprogrammer Exp mbhangui $
+# $Id: client.in,v 1.8 2020-08-31 16:40:53+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
 {
+    if [ -n "$CAT_PID" ] ; then
+        kill $CAT_PID 2>/dev/null
+    fi
     echo "ARGH!!! Committing suicide. Going down on SIGTERM"
     exit 1
 }
@@ -46,7 +55,7 @@ do_umount()
     fi
 }
 
-trap suicide TERM SIGINT
+trap suicide TERM INT
 
 if [ "$1" = "sleep" ] ; then
     sleep 20
@@ -94,20 +103,27 @@ else
     echo "Waiting for poweroff"
     echo wait 1>&7
     sessions=`ps --no-headers -s $$`
+    status=0
     if [ -x /usr/bin/setsid -a -n "$sessions" ] ; then
         /bin/cat <&6
     else
-        trap : TERM INT
         /bin/cat <&6 &
         CAT_PID=$!
         exec 6<&-
         wait $CAT_PID
-        kill $CAT_PID 2>/dev/null
+        if [ $? -gt 128 ] ; then
+            status=1
+            kill $CAT_PID 2>/dev/null
+        fi
     fi
-    echo "PI4 Powered off [$POWER_OFF]"
-    if [ -n "$POWER_OFF" ] ; then
-        /sbin/poweroff
+    if [ $status -eq 0 ] ; then
+        echo "PI4 Powered off [$POWER_OFF]"
+        if [ -n "$POWER_OFF" ] ; then
+            /sbin/poweroff
+        else
+            do_umount
+        fi
     else
-        do_umount
+        echo "shutting down fclient service"
     fi
 fi
