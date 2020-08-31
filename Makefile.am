@@ -13,7 +13,7 @@ bindir=@prefix@/bin
 
 pistopsysconfdir=@sysconfdir@/pistop
 libexec_PROGRAMS = server$(EXEEXT)
-libexec_SCRIPTS = create_service client
+libexec_SCRIPTS = create_service client backup
 noinst_DATA = pistop.spec
 
 server_SOURCES = server.c
@@ -35,6 +35,9 @@ create_service: create_service.in
 	$(edit) $@.in > $@
 	chmod +x $@
 client: client.in
+	$(edit) $@.in > $@
+	chmod +x $@
+backup: backup.in
 	$(edit) $@.in > $@
 	chmod +x $@
 pistop.spec: pistop.spec.in catChangeLog ChangeLog conf-version conf-release

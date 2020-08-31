@@ -6,3 +6,5 @@ pistop (@version@-@release@) unstable; urgency=medium
   * fixed shutdown script
   * Added code to do backup in fserver
   * redo logic to kill background jobs
+  * fixed path for pistop
+  * added backup script

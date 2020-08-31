@@ -87,6 +87,7 @@ install -m 0644 %{name}-release %{buildroot}%{sysconfdir}/%{name}-release
 %ghost      %attr(-,qmaill,nofiles)     %{logdir}/*
 %license COPYING
 %attr(755,root,root)                    %{_prefix}/libexec/pistop/client
+%attr(755,root,root)                    %{_prefix}/libexec/pistop/backup
 %attr(755,root,root)                    %{_prefix}/libexec/pistop/create_service
 %attr(755,root,root)                    %{_prefix}/libexec/pistop/server
 %attr(644,root,root) %config(noreplace) %{sysconfdir}/%{name}-release
