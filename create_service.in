@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.8  2021-01-11 22:21:14+05:30  Cprogrammer
+# create HOME environment variable
+#
 # Revision 1.7  2020-08-31 16:40:17+05:30  Cprogrammer
 # fixed shutdown script
 #
@@ -23,7 +26,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.7 2020-08-31 16:40:17+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.8 2021-01-11 22:21:14+05:30 Cprogrammer Exp mbhangui $
 #
 
 add_service()
@@ -58,6 +61,10 @@ add_service()
 	echo $2  > $servicedir/$service_name/variables/PORT
 	echo 300 > $servicedir/$service_name/variables/TIMEOUT
 	echo 10  > $servicedir/$service_name/variables/MAXDAEMONS
+	home=$(getent passwd $userid|cut -d: -f6)
+	if [ -n "$home" ] ; then
+		echo $home > $servicedir/$service_name/variables/HOME
+	fi
 	if [ " $service_name" = " fclient" ] ; then
 		(
 		echo "#!/bin/bash"
@@ -137,7 +144,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.7 2020-08-31 16:40:17+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.8 2021-01-11 22:21:14+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
