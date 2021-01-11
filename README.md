@@ -13,7 +13,7 @@ On the server (use the IP Address of your own server)
 ```
 # apt-get update
 # apt-get install pistop
-# /usr/libexec/pistop/create_service --servicedir=/service --service_name=fserver --host=192.168.1.1 --port=5555
+# /usr/libexec/pistop/create_service --servicedir=/service --service_name=fserver --host=192.168.1.1 --port=5555 --add-service
 ```
 
 On each client (use IP Address of your server)
@@ -21,7 +21,7 @@ On each client (use IP Address of your server)
 ```
 # apt-get update
 # apt-get install pistop
-# /usr/libexec/pistop/create_service --servicedir=/service --service_name=fclient --host=192.168.1.1 --port=5555
+# /usr/libexec/pistop/create_service --servicedir=/service --service_name=fclient --host=192.168.1.1 --port=5555 --add-service
 ```
 
 If you want to have your  clients shutdown itself when the server is powered off, create `POWER_OFF` enviroment variable by doing this
