@@ -8,3 +8,4 @@ pistop (@version@-@release@) unstable; urgency=medium
   * redo logic to kill background jobs
   * fixed path for pistop
   * added backup script
+  * service run file - use relative path for variables to allow renaming of service directory
