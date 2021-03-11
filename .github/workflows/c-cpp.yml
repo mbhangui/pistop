@@ -14,6 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: configure
-      run: ./configure --prefix=/usr --libexecdir=/usr/libexec/pistop
+      run: ./default.configure
     - name: make
       run: make
