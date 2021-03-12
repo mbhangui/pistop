@@ -12,7 +12,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: checkoutmain
+      uses: actions/checkout@v2
+      with:
+        path: main
+
+    - name: checkoutqmail
+      uses: actions/checkout@v2
+      with:
+        repository: mbhangui/libqmail
+        path: libqmail
+
+    - name: qmail
+      run: cd libqmail;./default.configure; make; make install-strip
+
     - name: configure
       run: ./default.configure
     - name: make
