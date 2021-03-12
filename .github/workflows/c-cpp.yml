@@ -24,7 +24,7 @@ jobs:
         path: libqmail
 
     - name: qmail
-      run: cd libqmail;./default.configure; make; make install-strip
+      run: cd libqmail;./default.configure; make; sudo make install-strip
 
     - name: configure
       run: ./default.configure
