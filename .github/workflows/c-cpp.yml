@@ -1,42 +1,30 @@
-name: Ubuntu, Mac OSX CI
+name: C/C++ CI
 
 on:
   push:
-    branches:
-      - '*'
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
 jobs:
   build:
-    name: ${{ matrix.host }}-${{ matrix.config.name }}
-    runs-on: ${{ matrix.host }}
-    strategy:
-      fail-fast: false
-      matrix:
-        host: [ubuntu-latest, macos-latest]
-    
+
+    runs-on: ubuntu-latest
+
     steps:
     - name: checkout_main
       uses: actions/checkout@v2
       with:
         path: main
 
-    - name: install_qmail
+    - name: checkout_qmail
       uses: actions/checkout@v2
       with:
         repository: mbhangui/libqmail
         path: libqmail
-      
-    - name: Darwin
-      run: if [ "${OS}" = "macos-latest" ]; then brew install automake autoconf libtool pkgconfig openssl; brew link --force openssl; ln -s /usr/local/opt/openssl/include/openssl /usr/local/include; fi
-      env:
-        OS: ${{ matrix.host }}
 
-    - name: configure_qmail
-      run: cd libqmail;./default.configure; make; sudo make install-strip
+    - name: install_qmail
+      run: cd libqmail; ./default.configure; make; sudo make install-strip
 
-    - name: configure_main
-      run: cd main; ./default.configure
-    - name: make_pistop
-      run: make
+    - name: build_pistop
+      run: cd main; ./default.configure; make
