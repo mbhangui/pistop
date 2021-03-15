@@ -10,8 +10,6 @@ So when I retire for the night to get a good night sleep, I use an android app k
 
 ## INSTALLATION
 
-[![C/C++ CI](https://github.com/mbhangui/pistop/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/mbhangui/pistop/actions/workflows/c-cpp.yml)
-
 On the server (use the IP Address of your own server)
 
 ```
