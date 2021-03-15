@@ -3,6 +3,11 @@ name: C/C++ CI
 on:
   push:
     branches: [ master ]
+    paths:
+      - '**/pistop/**'
+      - .github/workflows/pistop-c-cpp.yml
+      - '!**/pistop/pistop.spec.in'
+      - '!**.md'
   pull_request:
     branches: [ master ]
 
