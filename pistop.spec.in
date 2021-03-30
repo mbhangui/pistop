@@ -71,7 +71,7 @@ echo "Description=\"Start/Stop services on file server startup/shutdown\""
 echo "PISTOP_version="%{version}""
 echo "ID=%{name}"
 echo "HOME_URL=\"https://github.com/mbhangui/pistop\""
-echo "PACKAGE_BUGREPORT=\"Manvendra Bhangui pistop@indimail.org\""
+echo "PACKAGE_BUGREPORT=\"@email@\""
 ) > %{name}-release
 
 %install

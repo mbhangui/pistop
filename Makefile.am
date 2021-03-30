@@ -14,7 +14,7 @@ bindir=@prefix@/bin
 pistopsysconfdir=@sysconfdir@/pistop
 libexec_PROGRAMS = server$(EXEEXT)
 libexec_SCRIPTS = create_service client backup
-noinst_DATA = pistop.spec
+noinst_DATA = pistop.spec pistop.changes
 
 server_SOURCES = server.c
 server_LDADD = $(LIB_QMAIL)
@@ -26,6 +26,7 @@ edit = sed \
 	-e 's}@PACKAGE_VERSION\@}$(PACKAGE_VERSION)}g' \
 	-e 's}@version\@}$(VERSION)}g' \
 	-e "s|@release\@|"`cat conf-release`"|g" \
+	-e 's|@email\@|'"`cat conf-email`"'|g' \
 	-e 's}@pkgconfigdir\@}$(pkgconfigdir)}g' \
 	-e 's}@VERSION\@}$(VERSION)}g' \
 	-e 's}@pistopsysconfdir\@}$(pistopsysconfdir)}g' \
@@ -40,5 +41,8 @@ client: client.in
 backup: backup.in
 	$(edit) $@.in > $@
 	chmod +x $@
-pistop.spec: pistop.spec.in catChangeLog ChangeLog conf-version conf-release
+pistop.spec: pistop.spec.in catChangeLog doc/ChangeLog conf-version \
+conf-release conf-email
 	(cat $@.in;./catChangeLog) | $(edit) > $@
+pistop.changes: doc/ChangeLog conf-version conf-release conf-email
+	./catChangeLog --changes doc/ChangeLog > $@

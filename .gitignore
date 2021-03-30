@@ -51,7 +51,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 pistop.spec
+pistop.changes
 debian/changelog
+debian/control
+debian/copyright
 RCS
 autom4te.cache
 m4

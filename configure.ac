@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([pistop],m4_normalize(m4_include([conf-version])),[Manvendra Bhangui pistop@indimail.org],pistop,[https://github.com/mbhangui/pistop])
+AC_INIT([pistop],m4_normalize(m4_include([conf-version])),m4_normalize(m4_include([conf-email])),pistop,[https://github.com/mbhangui/pistop])
 AC_CONFIG_SRCDIR([server.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign])
