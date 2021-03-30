@@ -48,7 +48,7 @@ build-stamp:
 	echo PISTOP_VERSION=$(version); \
 	echo ID=pistop; \
 	echo HOME_URL="https://github.com/mbhangui/pistop"; \
-	echo PACKAGE_BUGREPORT=\"Manvendra Bhangui pistop@indimail.org\"; \
+	echo PACKAGE_BUGREPORT=\"'@email@'\"; \
 	) > pistop-release
 	touch build-stamp
 
