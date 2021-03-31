@@ -7,6 +7,7 @@ on:
       - .github/workflows/pistop-c-cpp.yml
       - '!**/debian/*'
       - '!**/pistop.spec.in'
+      - '!**/obs/*'
       - '!**/doc/*'
       - '!**.md'
       - '!**/pistop-obs.yml'

@@ -5,6 +5,7 @@ on:
     paths:
       - '**'
       - .github/workflows/pistop-obs.yml
+      - '!**/obs/*'
       - '!**/doc/*'
       - '!**.md'
       - '!**/pistop-c-cpp.yml'
