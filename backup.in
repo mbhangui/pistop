@@ -1,10 +1,13 @@
 #!/bin/sh
 # $Log: backup.in,v $
+# Revision 1.2  2021-04-01 20:52:00+05:30  Cprogrammer
+# use absolute paths in BACKUP env variable
+#
 # Revision 1.1  2020-08-31 22:55:51+05:30  Cprogrammer
 # Initial revision
 #
 #
-# $Id: backup.in,v 1.1 2020-08-31 22:55:51+05:30 Cprogrammer Exp mbhangui $
+# $Id: backup.in,v 1.2 2021-04-01 20:52:00+05:30 Cprogrammer Exp mbhangui $
 #
 if [ -n "$BACKUP" -a -n "$DEST" ] ; then
 	status=0
@@ -14,7 +17,7 @@ if [ -n "$BACKUP" -a -n "$DEST" ] ; then
 	for i in $BACKUP
 	do
 		echo "backing up $i"
-		rsync -valptgomHE --delete $DEST/$i $DEST/backup
+		rsync -valptgomHE --delete $i $DEST/backup
 		ret=$?
 		if [ $ret -ne 0 ] ; then
 			status=1

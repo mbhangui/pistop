@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.10  2021-04-01 20:52:13+05:30  Cprogrammer
+# use absolute path in BACKUP env variable
+#
 # Revision 1.9  2021-02-25 15:42:57+05:30  Cprogrammer
 # use relative path for variables to allow renaming of service directory
 #
@@ -29,7 +32,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.9 2021-02-25 15:42:57+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.10 2021-04-01 20:52:13+05:30 Cprogrammer Exp mbhangui $
 #
 
 add_service()
@@ -96,7 +99,7 @@ add_service()
 		echo "    mkdir -p \$DEST/backup"
 		echo "    for i in \$BACKUP"
 		echo "    do"
-		echo "        rsync -alptgomHE --delete \$DEST/\$i \$DEST/backup"
+		echo "        rsync -alptgomHE --delete \$i \$DEST/backup"
 		echo "    done"
 		echo "fi"
 		echo "exec /usr/bin/envdir variables sh -c \""
@@ -147,7 +150,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.9 2021-02-25 15:42:57+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.10 2021-04-01 20:52:13+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
