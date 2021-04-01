@@ -16,3 +16,5 @@ Release 1.0 Start 28/08/2020
     service directory
 - 30/03/2021
 10. obs integration
+- 01/04/2021
+11. backup - use absolute path in backup script
