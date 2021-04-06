@@ -11,10 +11,11 @@ DEFS=@DEFS@ -fno-strict-aliasing -I/usr/include/qmail
 
 bindir=@prefix@/bin
 
-pistopsysconfdir=@sysconfdir@/pistop
 libexec_PROGRAMS = server$(EXEEXT)
 libexec_SCRIPTS = create_service client backup
-noinst_DATA = pistop.spec pistop.changes
+noinst_DATA = pistop.spec pistop.changes PKGBUILD
+SYSCONFDIR=@sysconfdir@
+sysconf_DATA=pistop-release
 
 server_SOURCES = server.c
 server_LDADD = $(LIB_QMAIL)
@@ -46,3 +47,6 @@ conf-release conf-email
 	(cat $@.in;./catChangeLog) | $(edit) > $@
 pistop.changes: doc/ChangeLog conf-version conf-release conf-email
 	./catChangeLog --changes doc/ChangeLog > $@
+PKGBUILD: PKGBUILD.in conf-email \
+conf-version conf-release pistop.changes
+	cat $@.in | $(edit) > $@

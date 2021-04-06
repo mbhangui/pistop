@@ -84,3 +84,5 @@ debian/pistop.dsc
 debian/pistop.install
 debian/rules
 backup
+pistop-release
+PKGBUILD

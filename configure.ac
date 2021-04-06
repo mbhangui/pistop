@@ -27,4 +27,5 @@ AC_CHECK_HEADERS([stdlib.h errno.h sys/select.h sys/types.h sys/mount.h unistd.h
 AC_CHECK_FUNCS([select])
 
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([pistop-release:pistop-release.in],[], [])
 AC_OUTPUT

@@ -40,16 +40,9 @@ build-stamp:
 	# run configure script
 	#
 	HOME='.';export HOME
-	./configure --prefix=${prefix} --libexecdir=${libexecdir}
+	./configure --prefix=${prefix} --sysconfdir=/etc/pistop \
+		--libexecdir=${libexecdir}
 	$(MAKE) -s DESTDIR=$(DESTDIR)
-	( \
-	echo NAME=pistop; \
-	echo Description=\"Start/Stop services on file server startup/shutdown\"; \
-	echo PISTOP_VERSION=$(version); \
-	echo ID=pistop; \
-	echo HOME_URL="https://github.com/mbhangui/pistop"; \
-	echo PACKAGE_BUGREPORT=\"'@email@'\"; \
-	) > pistop-release
 	touch build-stamp
 
 clean:
@@ -67,9 +60,6 @@ install: build
 	dh_prep || dh_clean -k
 	dh_installdirs
 	$(MAKE) -s install DESTDIR=$(DESTDIR)
-	mkdir -p $(DESTDIR)$(sysconfdir)
-	install -m 0644 pistop-release "$(DESTDIR)$(sysconfdir)"/pistop-release
-	${rm} -f pistop-release
 
 binary-indep: build install
 	dh_testdir

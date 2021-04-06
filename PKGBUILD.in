@@ -1,0 +1,33 @@
+# Maintainer: @email@
+pkgname=pistop
+pkgver=@version@
+pkgrel=@release@
+pkgdesc="Start/Stop services on file server startup/shutdown"
+arch=('i686' 'x86_64')
+url="https://github.com/mbhangui/pistop"
+license=('GPL3')
+groups=('base-devel')
+depends=('coreutils' 'findutils' 'sed' 'libqmail')
+source=("$pkgname-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+provides=("pkgname")
+options=('strip' '!libtool' 'docs' 'staticlibs' 'zipman' 'debug')
+backup=(etc/pistop/pistop-release)
+changelog=$pkgname.changes
+_prefix=@prefix@
+_shareddir=@prefix@/share/doc/pistop
+
+build() {
+  cd $srcdir/$pkgname-${pkgver}
+  ./configure --prefix=${_prefix} --sysconfdir=/etc/pistop \
+    --libexecdir=${_prefix}/libexec/pistop
+  make -s
+}
+
+package() {
+  depends=('shadow' 'daemontools' 'ucspi-tcp')
+  cd $srcdir/$pkgname-${pkgver}
+  make DESTDIR=${pkgdir} install
+  install -D -m 0644 ${pkgname}.changes "$pkgdir"${_shareddir}/${pkgname}.changes
+  cd $srcdir
+}
