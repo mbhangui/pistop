@@ -44,7 +44,10 @@ MDrive -fstype=nfs,vers=4,soft,timeo=5,retry=1 pi4:/home/pi/MDrive
 Prebuilt binaries using openSUSE Build Service are available for pistop for
 
 * Debian (including ARM images for Debian 10 which work (and tested) for RaspberryPI (model 2,3 & 4) and Allo Sparky)
+* openSUSE Tumbleweed
 * Ubuntu
+* Arch Linux
+* Fedora
 
 Use the below url for installation
 
