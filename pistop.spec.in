@@ -13,7 +13,7 @@
 %global _hardened_build    1
 %endif
 %global _prefix            /usr
-%global sysconfdir         @sysconfdir@/pistop
+%global sysconfdir         @sysconfdir@
 %global logdir             /var/log/svc/pistop
 
 Name: pistop

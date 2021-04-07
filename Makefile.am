@@ -30,7 +30,7 @@ edit = sed \
 	-e 's|@email\@|'"`cat conf-email`"'|g' \
 	-e 's}@pkgconfigdir\@}$(pkgconfigdir)}g' \
 	-e 's}@VERSION\@}$(VERSION)}g' \
-	-e 's}@pistopsysconfdir\@}$(pistopsysconfdir)}g' \
+	-e 's}@sysconfdir\@}$(sysconfdir)}g' \
 	-e 's}@prefix\@}$(prefix)}g'
 
 create_service: create_service.in
