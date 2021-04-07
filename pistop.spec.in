@@ -52,7 +52,7 @@ rudimentary commands.
 %autosetup
 
 %build
-%configure --prefix=%{_prefix} --syscondir=/etc/pistop \
+%configure --prefix=%{_prefix} --sysconfdir=/etc/pistop \
   --libexecdir=%{_prefix}/libexec/pistop
 %{__make} -s %{?_smp_mflags}
 (
