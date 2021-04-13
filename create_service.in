@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.14  2021-04-13 17:49:38+05:30  Cprogrammer
+# create variables/.options file
+#
 # Revision 1.13  2021-04-13 16:48:02+05:30  Cprogrammer
 # fixed home variable
 #
@@ -41,7 +44,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.13 2021-04-13 16:48:02+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.14 2021-04-13 17:49:38+05:30 Cprogrammer Exp mbhangui $
 #
 
 add_service()
@@ -72,10 +75,11 @@ add_service()
 	chmod +x $servicedir/$service_name/log/run
 
 	mkdir -p $servicedir/$service_name/variables
-	echo $1  > $servicedir/$service_name/variables/HOST
-	echo $2  > $servicedir/$service_name/variables/PORT
-	echo 300 > $servicedir/$service_name/variables/TIMEOUT
-	echo 10  > $servicedir/$service_name/variables/MAXDAEMONS
+	echo "$prog_args" > $servicedir/$service_name/variables/.options
+	echo $1           > $servicedir/$service_name/variables/HOST
+	echo $2           > $servicedir/$service_name/variables/PORT
+	echo 300          > $servicedir/$service_name/variables/TIMEOUT
+	echo 10           > $servicedir/$service_name/variables/MAXDAEMONS
 	home=$(getent passwd 1000|cut -d: -f6)
 	if [ -n "$home" ] ; then
 		echo $home > $servicedir/$service_name/variables/HOME
@@ -159,7 +163,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.13 2021-04-13 16:48:02+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.14 2021-04-13 17:49:38+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
