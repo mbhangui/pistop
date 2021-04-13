@@ -20,7 +20,7 @@ edit = sed \
 	-e 's,@email\@,$(email),g' \
 	-e 's,@DATE\@,$(DATE),g'
 
-all: rules changelog \
+all: rules changelog preinst postinst prerm \
 	pistop.dsc pistop.install \
 	debian.tar.gz
 
@@ -34,6 +34,12 @@ changelog: ../doc/ChangeLog Makefile ../conf-version ../conf-release \
 ../conf-email
 	../catChangeLog --debian --name=pistop --state=unstable \
 		--urgency=low ../doc/ChangeLog > $@
+preinst: preinst.in
+	$(edit) $@.in > $@
+postinst: postinst.in
+	$(edit) $@.in > $@
+prerm: prerm.in
+	$(edit) $@.in > $@
 control: control.in ../conf-email
 	$(edit) $@.in > $@
 copyright: copyright.in ../conf-email
@@ -44,10 +50,10 @@ pistop.dsc: pistop.dsc.in Makefile ../conf-version ../conf-release \
 	$(edit) $@.in > $@
 
 debian.tar.gz: copyright rules changelog compat \
-Makefile control pistop.install
+Makefile control pistop.install preinst postinst prerm
 	tar cf - copyright rules changelog \
-	compat control pistop.install | gzip > $@
+	compat control pistop.install preinst postinst prerm | gzip > $@
 
 clean:
 	/bin/rm -f rules *.dsc changelog \
-	pistop.install debian.tar.gz
+	pistop.install prerm preinst postinst debian.tar.gz

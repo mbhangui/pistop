@@ -83,6 +83,9 @@ debian/debian.tar.gz
 debian/pistop.dsc
 debian/pistop.install
 debian/rules
+debian/prerm
+debian/preinst
+debian/postinst
 backup
 pistop-release
 PKGBUILD

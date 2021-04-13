@@ -14,7 +14,7 @@
 %endif
 %global _prefix            /usr
 %global sysconfdir         @sysconfdir@
-%global logdir             /var/log/svc/pistop
+%global logdir             /var/log/svc
 
 Name: pistop
 Version: @version@
@@ -84,5 +84,79 @@ install -m 0644 %{name}-rpm.info %{buildroot}%{sysconfdir}/%{name}-rpm.info
 %attr(755,root,root)                    %{_prefix}/libexec/pistop/server
 %attr(644,root,root) %config(noreplace) %{sysconfdir}/%{name}-release
 %attr(644,root,root) %config(noreplace) %{sysconfdir}/%{name}-rpm.info
+
+%pretrans
+# stop fclient, fserver services before upgrade
+if [ -d /run ] ; then
+  rundir=/run/svscan
+elif [ -d /var/run ] ; then
+  rundir=/var/run/svscan
+else
+  rundir=/service
+fi
+for i in fclient fserver; do
+  if [ ! -d /service/$i ] ; then
+    continue
+  fi
+  %{_prefix}/bin/svstat /service/$i >/dev/null 2>&1
+  if [ $? -eq 0 ] ; then
+    %{__mkdir_p} ${rundir}/$i
+    %{_prefix}/bin/svc -d /service/$i
+    touch ${rundir}/$i/.down
+  fi
+done
+
+%post
+argv1=$1
+if [ -z "$argv1" ] ; then
+  argv1=0
+fi
+# we are doing upgrade
+if [ $argv1 -eq 2 ] ; then # upgrade
+  if [ -d /run ] ; then
+    rundir=/run/svscan
+  elif [ -d /var/run ] ; then
+    rundir=/var/run/svscan
+  else
+    rundir=/service
+  fi
+  # refresh fclient, fserver services
+  for i in fclient fserver; do
+    if [ ! -d /service/$i ] ; then
+      continue
+    fi
+    if [ ! -f /service/$i/variables/.options ] ; then
+      %{__mkdir_p} /service/$i/variables
+      sed -n 2p /service/$i/run | cut -c3- > /service/$i/variables/.options
+    fi
+    %{_prefix}/sbin/minisvc --servicedir=/service --refreshsvc="/service/$i"
+    %{_prefix}/bin/svok /service/$i >/dev/null 2>&1
+    if [ $? -eq 0 -a -f ${rundir}/$i/.down ] ; then
+      %{__rm} -f ${rundir}/$i/.down
+      %{_prefix}/bin/svc -u /service/$i
+    fi
+    done
+  exit 0
+fi
+
+%preun
+argv1=$1
+if [ -z "$argv1" ] ; then
+  argv1=0
+fi
+# we are doing upgrade
+if [ $argv1 -eq 1 ] ; then
+  exit 0
+fi
+if [ -d /service/fclient ] ; then
+  service_name=fclient
+elif [ -d /service/fserver ] ; then
+  service_name=fserver
+fi
+echo "removing ${service_name} logs"
+log_dir=%{logdir}/${service_name}
+[ "$log_dir" != "/" ] && %{__rm} -fr $log_dir
+echo "stopping and removing ${service_name} service"
+/usr/libexec/pistop/create_service --servicedir=/service --service_name=${service_name} --del-service
 
 %changelog
