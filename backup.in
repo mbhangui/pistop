@@ -1,5 +1,8 @@
 #!/bin/sh
 # $Log: backup.in,v $
+# Revision 1.4  2021-04-13 15:54:41+05:30  Cprogrammer
+# check for mkdir error
+#
 # Revision 1.3  2021-04-13 15:29:23+05:30  Cprogrammer
 # append hostname to backup directory
 #
@@ -10,14 +13,17 @@
 # Initial revision
 #
 #
-# $Id: backup.in,v 1.3 2021-04-13 15:29:23+05:30 Cprogrammer Exp mbhangui $
+# $Id: backup.in,v 1.4 2021-04-13 15:54:41+05:30 Cprogrammer Exp mbhangui $
 #
 HOST=$(uname -n)
 if [ -n "$BACKUP" -a -n "$DEST" ] ; then
-	status=0
 	if [ ! -d $DEST/backup/$HOST ] ; then
 		mkdir -p $DEST/backup/$HOST
+		if [ $? -ne 0 ] ; then
+			exit 1
+		fi
 	fi
+	status=0
 	for i in $BACKUP
 	do
 		echo "backing up $i"
