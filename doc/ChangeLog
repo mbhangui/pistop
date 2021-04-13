@@ -18,3 +18,5 @@ Release 1.0 Start 28/08/2020
 10. obs integration
 - 01/04/2021
 11. backup - use absolute path in backup script
+- 13/04/2021
+12. use backup script in fclient service
