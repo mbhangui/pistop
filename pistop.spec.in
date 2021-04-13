@@ -127,9 +127,9 @@ if [ $argv1 -eq 2 ] ; then # upgrade
     fi
     if [ ! -f /service/$i/variables/.options ] ; then
       %{__mkdir_p} /service/$i/variables
-      options=`grep "^#" | /service/$i/run | sed -n 2p | cut -c3-`
+      options=`grep "^#" /service/$i/run | sed -n 2p | cut -c3-`
       if [ -n "$options" ] ; then
-        echo $options > /service/$i/variables/.option
+        echo $options > /service/$i/variables/.options
       fi
     fi
     %{_prefix}/sbin/minisvc --servicedir=/service --refreshsvc="/service/$i"
