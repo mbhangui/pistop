@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.12  2021-04-13 15:29:40+05:30  Cprogrammer
+# backup file in fclient service
+#
 # Revision 1.11  2021-04-01 20:58:31+05:30  Cprogrammer
 # do backup using backup script; start mpd of not running
 #
@@ -35,7 +38,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.11 2021-04-01 20:58:31+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.12 2021-04-13 15:29:40+05:30 Cprogrammer Exp mbhangui $
 #
 
 add_service()
@@ -84,12 +87,13 @@ add_service()
 		echo "PORT=\`cat variables/PORT\`"
 		echo "</dev/tcp/\$HOST/\$PORT"
 		echo "if [ \$? -eq 0 ] ; then"
-		echo "    exec /usr/bin/envdir variables sh -c \\"
-		echo "        \"sleep 5;exec /usr/bin/tcpclient -v -D -H -R -t \\"
-		echo "        \\\$TIMEOUT \\\$HOST \\\$PORT @prefix@/libexec/pistop/client start 2>&1\""
+		echo "  exec /usr/bin/envdir variables sh -c \""
+        echo "    @prefix@/libexec/pistop/backup"
+		echo "      sleep 5;exec /usr/bin/tcpclient -v -D -H -R -t \\"
+		echo "      \\\$TIMEOUT \\\$HOST \\\$PORT @prefix@/libexec/pistop/client start 2>&1\""
 		echo "else"
-		echo "    exec /usr/bin/envdir variables sh -c \\"
-		echo "        \"sleep 10; @prefix@/libexec/pistop/client sleep 2>&1\""
+		echo "  exec /usr/bin/envdir variables sh -c \""
+		echo "    sleep 10; @prefix@/libexec/pistop/client sleep 2>&1\""
 		echo "fi"
 		) > $servicedir/$service_name/run
 		> $servicedir/$service_name/variables/POWER_OFF
@@ -99,16 +103,16 @@ add_service()
 		echo "exec 2>&1"
 		echo
 		echo "exec /usr/bin/envdir variables sh -c \""
-        echo "    @prefix@/libexec/pistop/backup"
-        echo "    systemctl status mpd >/dev/null 2>&1"
-        echo "    if [ \$? -eq 0 ] ; then"
-        echo "        systemctl start mpd"
-        echo "    fi"
+        echo "  @prefix@/libexec/pistop/backup"
+        echo "  systemctl status mpd >/dev/null 2>&1"
+        echo "  if [ \$? -eq 0 ] ; then"
+        echo "    systemctl start mpd"
+        echo "  fi"
         echo ""
-		echo "    exec /usr/bin/tcpserver -v -D -H -R -l 0 \\"
+		echo "  exec /usr/bin/tcpserver -v -D -H -R -l 0 \\"
 		echo "    -c variables/MAXDAEMONS -o -b \\\$MAXDAEMONS \\"
 		echo "    -u 0 -g 0 \\\$HOST \\\$PORT \\"
-		echo "    @prefix@/libexec/pistop/server\""
+		echo "  @prefix@/libexec/pistop/server\""
 		) > $servicedir/$service_name/run
 		(
 		echo "#!/bin/sh"
@@ -152,7 +156,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.11 2021-04-01 20:58:31+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.12 2021-04-13 15:29:40+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
