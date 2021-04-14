@@ -21,3 +21,6 @@ Release 1.0 Start 28/08/2020
 - 13/04/2021
 12. use backup script in fclient service
 13. pistop.spec, debian/postinst: fixed typo causing postinst to hang
+- 14/04/2021
+74. update variables only if changed
+75. save variables using minisvc --export-variables
