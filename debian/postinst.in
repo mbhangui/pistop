@@ -54,6 +54,8 @@ if [ $upgrade -eq 1 ] ; then # upgrade
 			fi
 		fi
 		${prefix}/sbin/minisvc --servicedir=/service --refreshsvc="/service/$i"
+		${prefix}/sbin/minisvc --servicedir=/service --service-name=$i \
+			--export-variables=/service/$i/variables/.variables --force
 	done
 	# start fclient, fserver services after upgrade
 	if [ -d /run ] ; then
