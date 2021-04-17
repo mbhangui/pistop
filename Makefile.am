@@ -13,9 +13,10 @@ bindir=@prefix@/bin
 
 libexec_PROGRAMS = server$(EXEEXT)
 libexec_SCRIPTS = create_service client backup
-noinst_DATA = pistop.spec pistop.changes PKGBUILD
+noinst_DATA = pistop.spec PKGBUILD
 SYSCONFDIR=@sysconfdir@
 sysconf_DATA=pistop-release
+doc_DATA=README.md COPYING pistop.changes
 
 server_SOURCES = server.c
 server_LDADD = $(LIB_QMAIL)

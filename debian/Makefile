@@ -49,9 +49,9 @@ pistop.dsc: pistop.dsc.in Makefile ../conf-version ../conf-release \
 ../conf-email
 	$(edit) $@.in > $@
 
-debian.tar.gz: copyright rules changelog compat \
+debian.tar.gz: copyright rules changelog compat docs \
 Makefile control pistop.install preinst postinst prerm
-	tar cf - copyright rules changelog \
+	tar cf - copyright rules changelog docs \
 	compat control pistop.install preinst postinst prerm | gzip > $@
 
 clean:

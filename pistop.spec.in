@@ -25,7 +25,7 @@ License: GPL-2.0
 %else
 License: GPLv2
 %endif
-URL: https://github.com/mbhangui/pistop
+URL: https://github.com/mbhangui/%{name}
 Source0: http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
 
 %if %build_on_obs == 1
@@ -52,8 +52,8 @@ rudimentary commands.
 %autosetup
 
 %build
-%configure --prefix=%{_prefix} --sysconfdir=/etc/pistop \
-  --libexecdir=%{_prefix}/libexec/pistop
+%configure --prefix=%{_prefix} --sysconfdir=/etc/%{name} \
+  --libexecdir=%{_prefix}/libexec/%{name}
 %{__make} -s %{?_smp_mflags}
 (
 echo "---------------- INFORMATION ------------------------"
@@ -74,16 +74,18 @@ rm -rf $RPM_BUILD_ROOT
 install -m 0644 %{name}-rpm.info %{buildroot}%{sysconfdir}/%{name}-rpm.info
 
 %files
-%dir %attr(755,root,root)               %{_prefix}/libexec/pistop
+%dir %attr(755,root,root)               %{_prefix}/libexec/%{name}
 %ghost %dir %attr(0755,qmaill,nofiles)  %{logdir}
 %ghost      %attr(-,qmaill,nofiles)     %{logdir}/*
 %license COPYING
-%attr(755,root,root)                    %{_prefix}/libexec/pistop/client
-%attr(755,root,root)                    %{_prefix}/libexec/pistop/backup
-%attr(755,root,root)                    %{_prefix}/libexec/pistop/create_service
-%attr(755,root,root)                    %{_prefix}/libexec/pistop/server
+%attr(755,root,root)                    %{_prefix}/libexec/%{name}/client
+%attr(755,root,root)                    %{_prefix}/libexec/%{name}/backup
+%attr(755,root,root)                    %{_prefix}/libexec/%{name}/create_service
+%attr(755,root,root)                    %{_prefix}/libexec/%{name}/server
 %attr(644,root,root) %config(noreplace) %{sysconfdir}/%{name}-release
 %attr(644,root,root) %config(noreplace) %{sysconfdir}/%{name}-rpm.info
+%docdir %{_prefix}/share/doc/%{name}
+%{_prefix}/share/doc/*
 
 %pretrans
 # stop fclient, fserver services before upgrade
