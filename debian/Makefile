@@ -51,7 +51,7 @@ pistop.dsc: pistop.dsc.in Makefile ../conf-version ../conf-release \
 
 debian.tar.gz: copyright rules changelog compat docs \
 Makefile control pistop.install preinst postinst prerm
-	tar cf - copyright rules changelog docs \
+	tar cf - copyright rules changelog docs source \
 	compat control pistop.install preinst postinst prerm | gzip > $@
 
 clean:
