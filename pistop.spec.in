@@ -127,6 +127,7 @@ if [ $argv1 -eq 2 ] ; then # upgrade
     if [ ! -d /service/$i ] ; then
       continue
     fi
+	# earlier installations did not have .options
     if [ ! -f /service/$i/variables/.options ] ; then
       %{__mkdir_p} /service/$i/variables
       options=`grep "^#" /service/$i/run | sed -n 2p | cut -c3-`
@@ -134,17 +135,24 @@ if [ $argv1 -eq 2 ] ; then # upgrade
         echo $options > /service/$i/variables/.options
       fi
     fi
-    %{_prefix}/sbin/minisvc --servicedir=/service --refreshsvc="/service/$i"
+    %{_prefix}/sbin/minisvc --servicedir=/service --refreshsvc="/service/$i" --silent
     %{_prefix}/sbin/minisvc --servicedir=/service --service-name=$i \
-      --export-variables=/service/$i/variables/.variables --force
+      --export-variables=/service/$i/variables/.variables --force --silent
     %{_prefix}/bin/svok /service/$i >/dev/null 2>&1
     if [ $? -eq 0 -a -f ${rundir}/$i/.down ] ; then
       %{__rm} -f ${rundir}/$i/.down
       %{_prefix}/bin/svc -u /service/$i
     fi
-    done
+  done
   exit 0
 fi
+for i in fclient fserver; do
+  if [ ! -d /service/$i ] ; then
+    continue
+  fi
+  %{_prefix}/sbin/minisvc --servicedir=/service --service-name=$i \
+    --export-variables=/service/$i/variables/.variables --force --silent
+done
 
 %preun
 argv1=$1

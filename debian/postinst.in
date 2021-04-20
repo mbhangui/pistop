@@ -46,6 +46,7 @@ if [ $upgrade -eq 1 ] ; then # upgrade
 		if [ ! -d /service/$i ] ; then
 			continue
 		fi
+		# earlier installs did not have .options
 		if [ ! -f /service/$i/variables/.options ] ; then
 			mkdir -p /service/$i/variables
 			options=`grep "^#" /service/$i/run | sed -n 2p | cut -c3-`
@@ -53,9 +54,9 @@ if [ $upgrade -eq 1 ] ; then # upgrade
 				echo $options > /service/$i/variables/.options
 			fi
 		fi
-		${prefix}/sbin/minisvc --servicedir=/service --refreshsvc="/service/$i"
+		${prefix}/sbin/minisvc --servicedir=/service --refreshsvc="/service/$i" --silent
 		${prefix}/sbin/minisvc --servicedir=/service --service-name=$i \
-			--export-variables=/service/$i/variables/.variables --force
+			--export-variables=/service/$i/variables/.variables --force --silent
 	done
 	# start fclient, fserver services after upgrade
 	if [ -d /run ] ; then
@@ -80,4 +81,12 @@ if [ $upgrade -eq 1 ] ; then # upgrade
 	set -e
 	exit 0
 fi
+for i in fclient fserver
+do
+	if [ ! -d /service/$i ] ; then
+		continue
+	fi
+	${prefix}/sbin/minisvc --servicedir=/service --service-name=$i \
+		--export-variables=/service/$i/variables/.variables --force --silent
+done
 exit 0
