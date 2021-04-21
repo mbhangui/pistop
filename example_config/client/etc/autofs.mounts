@@ -1,0 +1,2 @@
+#Music     -fstype=cifs,vers=1.0,rw,username=pi,password=manny@@123,uid=mbhangui,gid=audio ://pi4wifi:NAS
+MDrive -fstype=nfs,vers=4,soft,timeo=5,retry=1 pi4:/home/pi/MDrive

@@ -1,0 +1,30 @@
+# Some useful aliases.
+alias h='history'
+alias which='builtin type'
+alias cp='cp -i'
+alias mv='mv -i'
+alias more=less
+alias cls=clear
+alias c=clear
+alias rm='rm -i'
+alias shutdown='sudo /home/pi/bin/pishutdown'
+alias reboot='sudo /sbin/shutdown -r now'
+alias apt-get='sudo apt-get'
+alias svc='sudo /usr/bin/svc'
+alias svstat='sudo /usr/bin/svstat'
+alias svps='sudo env LESS="-E -m" /usr/bin/svps'
+alias service='sudo service'
+alias systemctl='sudo systemctl'
+alias ls='ls --color=auto'
+alias update='sudo apt-get update && apt-get upgrade'
+alias mpc='mpc --host=PI4'
+alias cleanlogs='sudo /home/pi/MDrive/bin/cleanlogs'
+alias insert_song='/usr/libexec/mpdev/mpdev_update -S -j -t -D 0 -d /home/pi/MDrive/data/stats.db'
+alias update_song='/usr/libexec/mpdev/mpdev_update -S -j -t -D 0 -d -U /home/pi/MDrive/data/stats.db'
+alias delete_song='/usr/libexec/mpdev/mpdev_cleanup -c -d /home/pi/MDrive/data/stats.db'
+alias insert_sticker='/usr/libexec/mpdev/mpdev_update -S -j -t -D 1 -d /home/pi/MDrive/data/sticker.db'
+alias delete_sticker='/usr/libexec/mpdev/mpdev_cleanup -C -d /home/pi/MDrive/data/sticker.db'
+#
+# Csh compatability:
+#
+alias unsetenv=unset

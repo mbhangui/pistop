@@ -1,0 +1,6 @@
+#!/bin/bash 
+# @(#)Logout 1.3 010294 Manvendra
+if [ "$SHLVL" = 1 ]; then
+    [ -x /usr/bin/clear_console ] && /usr/bin/clear_console -q
+fi
+echo "`hostname`: $LOGNAME logged out at `date`"

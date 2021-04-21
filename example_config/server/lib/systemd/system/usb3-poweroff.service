@@ -1,0 +1,12 @@
+[Unit]
+Description=Turns off usb3 power on shutdown/reboot
+DefaultDependencies=no
+After=umount.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/uhubctl -a 0 -l 2
+
+[Install]
+WantedBy=halt.target poweroff.target
+

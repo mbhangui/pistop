@@ -1,0 +1,11 @@
+#!/bin/sh
+if [ $# -gt 1 ] ; then
+	if [ " $1" = " -h" ] ; then
+		svc -d /service/fserver /service/mpdev
+		sync
+		systemctl stop svscan mpd smbd nmbd nfs-server
+		umount /home/pi/MDrive
+		sync
+	fi
+fi
+exec /sbin/shutdown $*

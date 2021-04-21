@@ -1,0 +1,252 @@
+#! /bin/gsh
+# @(#).gfuncs 1.1 01-02-94 Manvendra
+
+#
+# Csh compatability:
+#
+
+alias unsetenv=unset
+
+function setenv()
+{
+	if [ $# -ne 2 ] ; then
+		echo "setenv: Too few arguments"
+	else
+		export $1="$2"
+	fi
+}
+
+# Function which adds an alias to the current shell and to
+# the ~/.alias file.
+
+add-alias ()
+{
+	local name=$1 value="$2"
+	echo alias $name=\'$value\' >>~/.alias
+	eval alias $name=\'$value\'
+	alias $name
+}
+
+# "repeat" command.  Like:
+#
+#	repeat 10 echo foo
+
+repeat ()
+{ 
+    local count="$1" i;
+    shift;
+    for i in $(seq 1 "$count");
+    do
+        eval "$@";
+    done
+}
+
+# Subfunction needed by `repeat'.
+
+seq ()
+{ 
+    local lower upper output;
+    lower=$1 upper=$2;
+    while [ $lower -le $upper ];
+    do
+        output="$output $lower";
+        lower=$[ $lower + 1 ];
+    done;
+    echo $output
+}
+
+l()
+{
+	/bin/ls --color=always -al "$@" | less -M -N -r
+}
+
+dir()
+{
+	/bin/ls --color=auto -l "$@" | grep '^d' | less -M -N
+}
+
+limit()
+{
+	ulimit -a $*
+}
+
+declare -x FPATH=$HOME/functions
+#
+# Declare a function ($1) to be autoloaded from a file ($2) when it is first
+# called.  This defines a `temporary' function that will `.' the file 
+# containg the real function definition, then execute that new definition with
+# the arguments given to this `fake' function.  The autoload function defined
+# by the file and the file itself *must* be named identically.
+#
+
+aload()
+{
+	savedot=`alias .`
+	unalias .
+	eval $1 '() {  . '$2' ; '$1' "$@" ; return $? }'
+	$savedot
+	unset savedot
+}
+
+#
+# Search $FPATH for a file the same name as the function given as $1, and
+# autoload the function from that file.  There is no default $FPATH.
+#
+
+autoload()
+{
+	#
+	# Save the list of functions; we're going to blow away the arguments
+	# in a second.  If any of the names contain white space, TFB.
+	#
+
+	local args="$*"
+
+	#
+	# This should, I think, list the functions marked as autoload and not
+	# yet defined, but we don't have enough information to do that here.
+	#
+	if [ $# -eq 0 ] ; then
+		echo "usage: autoload function [function...]"
+		return 1
+	fi
+
+	#
+	# If there is no $FPATH, there is no work to be done
+	#
+
+	if [ -z "$FPATH" ] ; then
+		echo autoload: FPATH not set
+		return 1
+	fi
+
+	#
+	# This treats FPATH exactly like PATH: a null field anywhere in the
+	# FPATH is treated the same as the current directory.
+	#
+	# The path splitting command is taken from Kernighan and Pike
+	#
+
+	fp=$(echo $FPATH | sed 's/^:/.:/
+				s/::/:.:/g
+				s/:$/:./
+				s/:/ /g')
+
+	for FUNC in $args ; do
+		#
+		# We're blowing away the arguments to autoload here...
+		# We have to; there are no arrays.
+		#
+		set $fp
+
+		while [ $# -ne 0 ] ; do
+			if [ -f $1/$FUNC ] ; then
+				break			# found it! 
+			fi
+			shift
+		done
+
+		if [ $# -eq 0 ] ; then
+			echo "$FUNC: autoload function not found"
+			continue
+		fi
+
+		echo auto-loading $FUNC from $1/$FUNC
+		aload $FUNC $1/$FUNC
+	done
+
+	return 0
+}
+
+psg()
+{
+	ps -ax | grep $* | grep -v grep
+}
+
+
+HEAD=/bin/head
+TAIL=/bin/tail
+CAT=/bin/cat
+CP=/bin/cp
+RM=/bin/rm
+SED=/bin/sed
+ECHO=/bin/echo
+
+insert()
+{
+	if [ $# -lt 3 ]
+	then 
+		$ECHO "USAGE:insert <file> <lineno | [eE]> <line>:"
+		return 2
+	fi
+
+	file=$1
+	line_no=$2
+	shift; shift
+
+	if [ ! -s $file ] ; then
+		$ECHO $* > $file
+		return 0
+	fi
+
+	if [ $line_no = "E" -o $line_no = "e" ] ; then
+		$ECHO $* >> $file
+		return 0
+	fi
+
+	$HEAD -`expr $line_no - 1` $file > /tmp/$$.rep
+	$ECHO $* >> /tmp/$$.rep
+	$TAIL +$line_no $file >> /tmp/$$.rep
+	$CP /tmp/$$.rep $file
+	$RM /tmp/$$.rep
+	return 0
+}
+
+pline()
+{
+	if [ $# -lt 2 ] ; then
+		$ECHO "Usage: line lineno file(s)"
+		return 1
+	fi
+	no=$1
+	shift
+	for file in $*
+	do
+		$SED -n "${no}p" $file
+	done
+	return 0
+}
+
+
+print()
+{
+	if [ $# -lt 1 ] ; then
+		echo "USAGE: print files"
+		return 1
+	fi
+	echo "[5i"
+	/bin/pr $*
+	echo "[4i"
+}
+
+cscope()
+{
+	declare -x EDITOR=vim
+
+	dir_last=`basename $PWD`
+	if [ " $dir_last" = " indimail" ] ; then
+		OPTS="-q -R"
+	else
+		OPTS="-q"
+	fi
+	/usr/bin/cscope $OPTS $*
+}
+
+tail()
+{
+	if [ -f /usr/bin/tai64nlocal ] ; then
+		/usr/bin/tail $* | /usr/bin/tai64nlocal
+	else
+		/usr/bin/tail $*
+	fi
+}
