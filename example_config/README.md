@@ -14,7 +14,7 @@ Files|Purpose
 -----|-------
 /etc/exports|Export /home/pi/MDrive for all clients. You have to install/enable nfs-server service
 /etc/fstab|Entry of external SATA disk. It uses systemd to mount the disk whenever accessed as /home/pi/MDrive
-/etc/mpd.conf|This has the music_direcory entry as /var/lib/mpd/MDrive/Music. /var/lib/mpd/MDrive is a symbolic link to /home/pi/MDrive.
+/etc/mpd.conf|This has the music_directory entry as /var/lib/mpd/MDrive/Music. /var/lib/mpd/MDrive is a symbolic link to /home/pi/MDrive.
 /lib/systemd/system/svscan.service|Starts svscan service configured in /service
 /lib/systemd/system/mpd.service|The mpd database service
 /lib/systemd/system/usb3-poweroff.service|Shuts down the usb3 port when raspberry pi4 is powered off. This helps the connected disk to automatically go into standy state
@@ -28,7 +28,7 @@ The clients uses /service/fclient svscan service to start automount and mpd serv
 
 Files|Purpose
 -----|-------
-/etc/mpd.conf|This has the music_direcory entry as /var/lib/mpd/MDrive/Music. /var/lib/mpd/MDrive is a symbolic link to /home/pi/MDrive.
+/etc/mpd.conf|This has the music_directory entry as /var/lib/mpd/MDrive/Music. /var/lib/mpd/MDrive is a symbolic link to /home/pi/MDrive.
 /lib/systemd/system/svscan.service|Starts svscan service configured in /service
 /lib/systemd/system/mpd.service|The mpd database service
 /service/fclient|This is a svscan service. It starts the automount service to mount the disk on server and also starts the mpd service. When the server is shutdown, it unmounts the disk and stops the automount and mpd service
