@@ -8,11 +8,11 @@ The problem **pistop** solves is a synchronized mounting of the shared Music Dir
 
 So when I retire for the night to get a good night sleep, I use an android app known as `ssh button` to shutdown the NFSv4 server. The moment the server shuts down, all my clients shutdown together. Using home automation, I then switch off the power output to each and very adaptor thereby saving around 0.05 kwhr of electricity per device every day. You could say that these SBC consume miniscule power, but this kind of philosophy has led us mankind to plunder this planet. Global Warming is a stark reality of the day and we should try to conserve electricity as much as possible.
 
-You can take a look at the files, configuration for my server and client in the directory [example_config](https://github.com/mbhangui/pistop/tree/master/example_config).
+You can take a look at the files, configuration for my server and client in the directory [example_config](https://github.com/mbhangui/pistop/tree/master/example_config). Along with pistop, I use [mpd event watcher daemon](https://github.com/mbhangui/mpdev) to maintain playcounts and ratings. This is something that mpd(1) doesn't provide out of the box.
 
 ## INSTALLATION
 
-On the server (use the IP Address of your own server)
+On the server (use the IP Address of your own server). This will create fserver supervise service in /service
 
 ```
 # apt-get update
@@ -20,7 +20,7 @@ On the server (use the IP Address of your own server)
 # /usr/libexec/pistop/create_service --servicedir=/service --service_name=fserver --host=192.168.1.1 --port=5555 --add-service
 ```
 
-On each client (use IP Address of your server)
+On each client (use IP Address of your server). This will create fclient supervise service in /service
 
 ```
 # apt-get update
@@ -40,6 +40,25 @@ file /etc/auto.master.d/mpd.autofs
 file /etc/autofs.mounts
 MDrive -fstype=nfs,vers=4,soft,timeo=5,retry=1 pi4:/home/pi/MDrive
 ```
+
+**Server NFSv4 SETUP**
+
+```
+file /etc/exports
+/home/pi/MDrive 192.168.2.0/24(rw,async,no_root_squash,subtree_check,anonuid=1000,anongid=1000)
+
+file /etc/fstab
+proc                                      /proc           proc  defaults                                          0 0
+PARTUUID=5e3da3da-01                      /boot           vfat  defaults                                          0 2
+PARTUUID=5e3da3da-02                      /               ext4  defaults,noatime                                  0 1
+UUID=20bcc800-9dce-4734-947d-6d760b36a4de /home/pi/MDrive ext4  defaults,noatime,noauto,x-systemd.automount       0 2
+tmpfs                                     /tmp            tmpfs defaults,size=250M,noatime,nodev,nosuid,mode=1777 0 0
+tmpfs                                     /var/tmp        tmpfs defaults,size=200M,noatime,nodev,nosuid,mode=1777 0 0
+# a swapfile is not a swap partition, no line here
+#   use  dphys-swapfile swap[on|off]  for that
+```
+
+NOTE: You only need to add the line having `UUID=` in your /etc/fstab. Your UUID for your external drive will be different. Use blkid(1) to find that out.
 
 ## Prebuilt Binaries
 
