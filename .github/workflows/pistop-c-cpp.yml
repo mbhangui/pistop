@@ -11,6 +11,7 @@ on:
       - '!**/doc/*'
       - '!**.md'
       - '!**/pistop-obs.yml'
+      - '!example_config/*'
 
 jobs:
   build:

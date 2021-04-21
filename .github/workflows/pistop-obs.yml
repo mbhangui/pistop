@@ -9,6 +9,7 @@ on:
       - '!**/doc/*'
       - '!**.md'
       - '!**/pistop-c-cpp.yml'
+      - '!example_config/*'
   workflow_dispatch:
 
 jobs:
