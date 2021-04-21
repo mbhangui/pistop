@@ -8,6 +8,8 @@ The problem **pistop** solves is a synchronized mounting of the shared Music Dir
 
 So when I retire for the night to get a good night sleep, I use an android app known as `ssh button` to shutdown the NFSv4 server. The moment the server shuts down, all my clients shutdown together. Using home automation, I then switch off the power output to each and very adaptor thereby saving around 0.05 kwhr of electricity per device every day. You could say that these SBC consume miniscule power, but this kind of philosophy has led us mankind to plunder this planet. Global Warming is a stark reality of the day and we should try to conserve electricity as much as possible.
 
+You can take a look at the files, configuration for my server and client in the directory [example_config](https://github.com/mbhangui/pistop/tree/master/example_config).
+
 ## INSTALLATION
 
 On the server (use the IP Address of your own server)
