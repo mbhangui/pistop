@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.26  2021-04-27 15:32:41+05:30  Cprogrammer
+# fixed update to be run in background
+#
 # Revision 1.25  2021-04-27 15:14:02+05:30  Cprogrammer
 # create HOME variable for update service
 #
@@ -77,7 +80,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.25 2021-04-27 15:14:02+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.26 2021-04-27 15:32:41+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -215,16 +218,16 @@ add_service()
 			echo "    apt-get -qy update;"
 			echo "    if [ -d /service/fclient ] ; then"
 			echo "      echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "      cd /tmp; nohup apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop" &
+			echo "      cd /tmp && nohup apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop &"
 			echo "      wait"
 			echo "    else"
         	echo "      if [ \$count -eq 0 ] ; then"
 			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "        cd /tmp; nohup apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop" &
+			echo "        cd /tmp && nohup apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop &"
 			echo "        wait"
 			echo "      else"
 			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
-			echo "        cd /tmp; nohup apt-get -qy --only-upgrade install \\\$UPGRADE" &
+			echo "        cd /tmp && nohup apt-get -qy --only-upgrade install \\\$UPGRADE &"
 			echo "        wait"
 			echo "      fi"
 			echo "    fi"
@@ -235,16 +238,16 @@ add_service()
 			echo "    dnf makecache --timer;"
 			echo "    if [ -d /service/fclient ] ; then"
 			echo "      echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "      cd /tmp; nohup dnf update \\\$UPGRADE daemontools pistop" &
+			echo "      cd /tmp && nohup dnf update \\\$UPGRADE daemontools pistop &"
 			echo "      wait"
 			echo "    else"
         	echo "      if [ \$count -eq 0 ] ; then"
 			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "        cd /tmp; nohup dnf update \\\$UPGRADE daemontools pistop" &
+			echo "        cd /tmp && nohup dnf update \\\$UPGRADE daemontools pistop &"
 			echo "        wait"
 			echo "      else"
 			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
-			echo "        cd /tmp; nohup dnf update \\\$UPGRADE" &
+			echo "        cd /tmp && nohup dnf update \\\$UPGRADE &"
 			echo "        wait"
 			echo "      fi"
 			echo "    fi"
@@ -255,16 +258,16 @@ add_service()
 			echo "    yum makecache --timer;"
 			echo "    if [ -d /service/fclient ] ; then"
 			echo "      echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "      cd /tmp; nohup yum update \\\$UPGRADE daemontools pistop" &
+			echo "      cd /tmp && nohup yum update \\\$UPGRADE daemontools pistop &"
 			echo "      wait"
 			echo "    else"
         	echo "      if [ \$count -eq 0 ] ; then"
 			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "        cd /tmp; nohup yum update \\\$UPGRADE daemontools pistop" &
+			echo "        cd /tmp && nohup yum update \\\$UPGRADE daemontools pistop &"
 			echo "        wait"
 			echo "      else"
 			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
-			echo "        cd /tmp; nohup yum update \\\$UPGRADE" &
+			echo "        cd /tmp && nohup yum update \\\$UPGRADE &"
 			echo "        wait"
 			echo "      fi"
 			echo "    fi"
@@ -275,16 +278,16 @@ add_service()
 			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 			echo "    if [ -d /service/fclient ] ; then"
 			echo "      echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "      cd /tmp; nohup zypper up \\\$UPGRADE daemontools pistop" &
+			echo "      cd /tmp && nohup zypper up \\\$UPGRADE daemontools pistop &"
 			echo "      wait"
 			echo "    else"
         	echo "      if [ \$count -eq 0 ] ; then"
 			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "        cd /tmp; nohup zypper up \\\$UPGRADE daemontools pistop" &
+			echo "        cd /tmp && nohup zypper up \\\$UPGRADE daemontools pistop &"
 			echo "        wait"
 			echo "      else"
 			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
-			echo "        cd /tmp; nohup zypper up \\\$UPGRADE" &
+			echo "        cd /tmp && nohup zypper up \\\$UPGRADE &"
 			echo "        wait"
 			echo "      fi"
 			echo "    fi"
@@ -334,7 +337,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.25 2021-04-27 15:14:02+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.26 2021-04-27 15:32:41+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
