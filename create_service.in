@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.24  2021-04-27 14:55:39+05:30  Cprogrammer
+# run update with nohup
+#
 # Revision 1.23  2021-04-27 14:47:28+05:30  Cprogrammer
 # added wait for apt-get to complete
 #
@@ -71,7 +74,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.23 2021-04-27 14:47:28+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.24 2021-04-27 14:55:39+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -122,7 +125,7 @@ add_service()
 		fi
 	elif [ " $service_name" = " update" ] ; then
 		check_update_if_diff $servicedir/$service_name/variables/UPGRADE \
-			"daemontools ucspi-tcp mpdev libqmail mpd"
+			"ucspi-tcp mpdev libqmail mpd"
 		check_update_if_diff $servicedir/$service_name/variables/INTERVAL 600
 		check_update_if_diff $servicedir/$service_name/variables/DEBIAN_FRONTEND "noninteractive"
 	fi
@@ -196,9 +199,6 @@ add_service()
 		echo
 		echo "if [ -d /service/fserver ] ; then"
 		echo "  count=\$(ps -ef|grep /usr/libexec/pistop/server|egrep -v \"tcpserver|grep\"|wc -l)"
-		echo "  if [ \$count -gt 0 ] ; then"
-		echo "    echo \\\"\$count clients already running. Will not upgrade pistop\\\""
-		echo "  fi"
 		echo "fi"
 		echo "exec /usr/bin/envdir variables sh -c \""
 		echo "  echo \\\"starting update service\\\";"
@@ -207,13 +207,13 @@ add_service()
 			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 			echo "    apt-get -qy update;"
 			echo "    if [ -d /service/fclient ] ; then"
-			echo "      echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "      cd /tmp; nohup apt-get -qy --only-upgrade install \\\$UPGRADE pistop" &
+			echo "      echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+			echo "      cd /tmp; nohup apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop" &
 			echo "      wait"
 			echo "    else"
         	echo "      if [ \$count -eq 0 ] ; then"
-			echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "        cd /tmp; nohup apt-get -qy --only-upgrade install \\\$UPGRADE pistop" &
+			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+			echo "        cd /tmp; nohup apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop" &
 			echo "        wait"
 			echo "      else"
 			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
@@ -227,13 +227,13 @@ add_service()
 			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 			echo "    dnf makecache --timer;"
 			echo "    if [ -d /service/fclient ] ; then"
-			echo "      echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "      cd /tmp; nohup dnf update \\\$UPGRADE pistop" &
+			echo "      echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+			echo "      cd /tmp; nohup dnf update \\\$UPGRADE daemontools pistop" &
 			echo "      wait"
 			echo "    else"
         	echo "      if [ \$count -eq 0 ] ; then"
-			echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "        cd /tmp; nohup dnf update \\\$UPGRADE pistop" &
+			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+			echo "        cd /tmp; nohup dnf update \\\$UPGRADE daemontools pistop" &
 			echo "        wait"
 			echo "      else"
 			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
@@ -247,13 +247,13 @@ add_service()
 			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 			echo "    yum makecache --timer;"
 			echo "    if [ -d /service/fclient ] ; then"
-			echo "      echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "      cd /tmp; nohup yum update \\\$UPGRADE pistop" &
+			echo "      echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+			echo "      cd /tmp; nohup yum update \\\$UPGRADE daemontools pistop" &
 			echo "      wait"
 			echo "    else"
         	echo "      if [ \$count -eq 0 ] ; then"
-			echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "        cd /tmp; nohup yum update \\\$UPGRADE pistop" &
+			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+			echo "        cd /tmp; nohup yum update \\\$UPGRADE daemontools pistop" &
 			echo "        wait"
 			echo "      else"
 			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
@@ -267,13 +267,13 @@ add_service()
 			echo "  zypper refresh;"
 			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 			echo "    if [ -d /service/fclient ] ; then"
-			echo "      echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "      cd /tmp; nohup zypper up \\\$UPGRADE pistop" &
+			echo "      echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+			echo "      cd /tmp; nohup zypper up \\\$UPGRADE daemontools pistop" &
 			echo "      wait"
 			echo "    else"
         	echo "      if [ \$count -eq 0 ] ; then"
-			echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "        cd /tmp; nohup zypper up \\\$UPGRADE pistop" &
+			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+			echo "        cd /tmp; nohup zypper up \\\$UPGRADE daemontools pistop" &
 			echo "        wait"
 			echo "      else"
 			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
@@ -327,7 +327,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.23 2021-04-27 14:47:28+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.24 2021-04-27 14:55:39+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
