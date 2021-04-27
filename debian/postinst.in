@@ -41,7 +41,7 @@ esac
 #DEBHELPER#
 if [ $upgrade -eq 1 ] ; then # upgrade
 	# refresh fclient, fserver services
-	for i in fclient fserver
+	for i in fclient fserver update
 	do
 		if [ ! -d /service/$i ] ; then
 			continue
@@ -67,7 +67,7 @@ if [ $upgrade -eq 1 ] ; then # upgrade
 		rundir=/service
 	fi
 	set +e
-	for i in fclient fserver
+	for i in fclient fserver update
 	do
 		if [ ! -d /service/$i ] ; then
 			continue
@@ -81,7 +81,7 @@ if [ $upgrade -eq 1 ] ; then # upgrade
 	set -e
 	exit 0
 fi
-for i in fclient fserver
+for i in fclient fserver update
 do
 	if [ ! -d /service/$i ] ; then
 		continue

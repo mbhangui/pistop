@@ -55,4 +55,5 @@ echo "removing pistop logs"
 rm -fr /var/log/svc/$service_name
 echo "stopping and removing $service_name service"
 ${prefix}/libexec/pistop/create_service --servicedir=/service --service_name=$service_name --del-service
+${prefix}/libexec/pistop/create_service --servicedir=/service --service_name=update --del-service
 exit 0
