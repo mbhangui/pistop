@@ -29,3 +29,6 @@ Release 1.0 Start 28/08/2020
 - 20/04/2021
 17. added --silent parmeter to minisvc invocation
 18. added debian/source/format
+- 27/04/2021
+19. server.c: display pid when quitting
+20. create_service: added update service

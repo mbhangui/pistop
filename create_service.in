@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.19  2021-04-27 12:48:58+05:30  Cprogrammer
+# added update service
+#
 # Revision 1.18  2021-04-14 13:20:10+05:30  Cprogrammer
 # fixed .options
 #
@@ -56,7 +59,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.18 2021-04-14 13:20:10+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.19 2021-04-27 12:48:58+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -96,18 +99,26 @@ add_service()
 
 	mkdir -p $servicedir/$service_name/variables
 	echo "$prog_args" > $servicedir/$service_name/variables/.options
-	check_update_if_diff $servicedir/$service_name/variables/HOST       $1
-	check_update_if_diff $servicedir/$service_name/variables/PORT       $2
-	check_update_if_diff $servicedir/$service_name/variables/TIMEOUT    300
-	check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
-	home=$(getent passwd 1000|cut -d: -f6)
-	if [ -n "$home" ] ; then
-		check_update_if_diff $servicedir/$service_name/variables/HOME $home
+	if [ " $service_name" = " fclient" -o " $service_name" = " fserver" ] ; then
+		check_update_if_diff $servicedir/$service_name/variables/HOST       $1
+		check_update_if_diff $servicedir/$service_name/variables/PORT       $2
+		check_update_if_diff $servicedir/$service_name/variables/TIMEOUT    300
+		check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
+		home=$(getent passwd 1000|cut -d: -f6)
+		if [ -n "$home" ] ; then
+			check_update_if_diff $servicedir/$service_name/variables/HOME $home
+		fi
+	elif [ " $service_name" = " update" ] ; then
+		check_update_if_diff $servicedir/$service_name/variables/UPGRADE \
+			"daemontools ucspi-tcp mpdev pistop libqmail mpd"
+		check_update_if_diff $servicedir/$service_name/variables/INTERVAL 600
+		check_update_if_diff $servicedir/$service_name/variables/DEBIAN_FRONTEND "noninteractive"
 	fi
 	if [ " $service_name" = " fclient" ] ; then
 		(
 		echo "#!/bin/bash"
 		echo "# $prog_args"
+		echo ""
 		echo "exec 2>&1"
 		echo 
 		echo "HOST=\`cat variables/HOST\`"
@@ -130,6 +141,7 @@ add_service()
 		(
 		echo "#!/bin/sh"
 		echo "# $prog_args"
+		echo ""
 		echo "exec 2>&1"
 		echo
 		echo "exec /usr/bin/envdir variables sh -c \""
@@ -150,6 +162,105 @@ add_service()
 		echo "exit 0"
 		) > $servicedir/$service_name/shutdown
 		chmod +x $servicedir/$service_name/shutdown
+	elif [ " $service_name" = " update" ] ; then
+		if [ -f /etc/debian_version ] ; then
+			system="debian"
+		elif [ -f /usr/bin/dnf ] ; then
+			system="rpm-dnf"
+		elif [ -f /usr/bin/yum ] ; then
+			system="rpm-yum"
+		elif [ -f /usr/bin/zypper ] ; then
+			system="rpm-suse"
+		else
+			system="unknown"
+			echo "unsupported system. Did not find apt-get, dnf, yum or zypper" 1>&2
+			exit 0
+		fi
+		(
+		echo "#!/bin/sh"
+		echo "# $prog_args"
+		echo ""
+		echo "exec 2>&1"
+		echo
+		echo "exec /usr/bin/envdir variables sh -c \""
+		echo "  echo \\\"starting update service\\\";"
+		case "$system" in
+			debian)
+			echo "  apt-get -y update;"
+			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
+			echo "    if [ -d /service/fclient ] ; then"
+			echo "      echo \\\"checking updates for \\\$UPGRADE\\\""
+			echo "      apt-get -y --only-upgrade install \\\$UPGRADE"
+			echo "    else"
+			echo "      count=$(ps -ef|grep /usr/libexec/pistop/server|grep -v grep|wc -l)"
+        	echo "      if [ \$count -gt 0 ] ; then"
+			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
+			echo "        apt-get -y --only-upgrade install \\\$UPGRADE"
+			echo "      else"
+			echo "        echo \\\"clients already running. Cannot upgrade\\\""
+			echo "      fi"
+			echo "    fi"
+			echo "  fi"
+			;;
+			rpm-dnf)
+			echo "  dnf makecache --timer;"
+			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
+			echo "    if [ -d /service/fclient ] ; then"
+			echo "      echo \\\"checking updates for \\\$UPGRADE\\\""
+			echo "      dnf update \\\$UPGRADE"
+			echo "    else"
+			echo "      count=$(ps -ef|grep /usr/libexec/pistop/server|grep -v grep|wc -l)"
+        	echo "      if [ \$count -gt 0 ] ; then"
+			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
+			echo "        dnf update \\\$UPGRADE"
+			echo "      else"
+			echo "        echo \\\"clients already running. Cannot upgrade\\\""
+			echo "      fi"
+			echo "    fi"
+			echo "  fi"
+			;;
+			rpm-yum)
+			echo "  yum makecache --timer;"
+			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
+			echo "    if [ -d /service/fclient ] ; then"
+			echo "      echo \\\"checking updates for \\\$UPGRADE\\\""
+			echo "      yum update \\\$UPGRADE"
+			echo "    else"
+			echo "      count=$(ps -ef|grep /usr/libexec/pistop/server|grep -v grep|wc -l)"
+        	echo "      if [ \$count -gt 0 ] ; then"
+			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
+			echo "        yum update \\\$UPGRADE"
+			echo "      else"
+			echo "        echo \\\"clients already running. Cannot upgrade\\\""
+			echo "      fi"
+			echo "    fi"
+			echo "  fi"
+			;;
+			rpm-suse)
+			echo "  zypper refresh;"
+			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
+			echo "    if [ -d /service/fclient ] ; then"
+			echo "      echo \\\"checking updates for \\\$UPGRADE\\\""
+			echo "      zypper up \\\$UPGRADE"
+			echo "    else"
+			echo "      count=$(ps -ef|grep /usr/libexec/pistop/server|grep -v grep|wc -l)"
+        	echo "      if [ \$count -gt 0 ] ; then"
+			echo "        echo \\\"checking updates for \\\$UPGRADE\\\""
+			echo "        zypper up \\\$UPGRADE"
+			echo "      else"
+			echo "        echo \\\"clients already running. Cannot upgrade\\\""
+			echo "      fi"
+			echo "    fi"
+			echo "  fi"
+			;;
+		esac
+		echo "  if [ -n \\\"\\\$INTERVAL\\\" -a \\\$INTERVAL -gt 600 ] ; then"
+		echo "    sleep \\\$INTERVAL"
+		echo "  else"
+		echo "    sleep 1800"
+		echo "  fi"
+		echo "\""
+	    ) > $servicedir/$service_name/run
 	fi
 	chmod +x $servicedir/$service_name/run
 }
@@ -186,7 +297,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.18 2021-04-14 13:20:10+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.19 2021-04-27 12:48:58+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -201,8 +312,8 @@ while test $# -gt 0; do
 	;;
 	--service_name=*)
 	service_name=$optarg
-	if [ " $service_name" != " fclient" -a " $service_name" != " fserver" ] ; then
-		echo "service_name should be fclient or fserver" 1>&2
+	if [ " $service_name" != " fclient" -a " $service_name" != " fserver" -a " $service_name" != " update" ] ; then
+		echo "service_name should be fclient, fserver or update" 1>&2
 	fi
 	;;
 	--host=*)
@@ -213,12 +324,16 @@ while test $# -gt 0; do
 	;;
 
 	--add-service)
-	if [ -z "$servicedir" -o -z "$service_name" -o -z "$port" -o -z "$host" ] ; then
-		echo "You must specify servicedir, service_name, port, host" 1>&2
-		usage
-	else
-		add_service $host $port
+	if [ -z "$servicedir" -o -z "$service_name" ] ; then
+		echo "You must specify servicedir, service_name" 1>&2
+		usage 1
+	elif [ "$service_name" = "fclient" -o "$service_name" = "fserver" ] ; then
+		if [ -z "$port" -o -z "$host" ] ; then
+			echo "You must specify port, host for $service_name" 1>&2
+			usage 1
+		fi
 	fi
+	add_service "$host" "$port"
 	;;
 	--del-service)
 	del_service
