@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.25  2021-04-27 15:14:02+05:30  Cprogrammer
+# create HOME variable for update service
+#
 # Revision 1.24  2021-04-27 14:55:39+05:30  Cprogrammer
 # run update with nohup
 #
@@ -74,7 +77,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.24 2021-04-27 14:55:39+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.25 2021-04-27 15:14:02+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -128,6 +131,10 @@ add_service()
 			"ucspi-tcp mpdev libqmail mpd"
 		check_update_if_diff $servicedir/$service_name/variables/INTERVAL 600
 		check_update_if_diff $servicedir/$service_name/variables/DEBIAN_FRONTEND "noninteractive"
+		home=$(getent passwd 1000|cut -d: -f6)
+		if [ -n "$home" ] ; then
+			check_update_if_diff $servicedir/$service_name/variables/HOME $home
+		fi
 	fi
 	if [ " $service_name" = " fclient" ] ; then
 		(
@@ -327,7 +334,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.24 2021-04-27 14:55:39+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.25 2021-04-27 15:14:02+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
