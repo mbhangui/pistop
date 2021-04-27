@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.24  2021-04-27 19:07:25+05:30  Cprogrammer
+# refactored code to make it smaller
+#
 # Revision 1.23  2021-04-27 17:35:41+05:30  Cprogrammer
 # use at command to run update
 #
@@ -72,7 +75,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.23 2021-04-27 17:35:41+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.24 2021-04-27 19:07:25+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -207,136 +210,127 @@ add_service()
 		echo "fi"
 		echo "exec /usr/bin/envdir variables sh -c \""
 		echo "  echo \\\"starting update service\\\";"
+		echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 		case "$system" in
 			debian)
-			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 			echo "    apt-get -qy update;"
-			echo "    if [ -d /service/fclient ] ; then"
-			echo "      if [ -f /usr/bin/at ] ; then"
-			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "        echo \\\"apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop\\\"| at now +1 minute"
-			echo "      else"
-			echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "        apt-get -qy --only-upgrade install \\\$UPGRADE pistop"
-			echo "      fi"
-			echo "    else"
-			echo "      if [ \$count -eq 0 ] ; then"
-			echo "        if [ -f /usr/bin/at ] ; then"
-			echo "          echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "          echo \\\"apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop\\\"| at now +1 minute"
-			echo "        else"
-			echo "          echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "          apt-get -qy --only-upgrade install \\\$UPGRADE pistop"
-			echo "        fi"
-			echo "      else"
-			echo "        if [ -f /usr/bin/at ] ; then"
-			echo "          echo \\\"checking updates for \\\$UPGRADE daemontools\\\""
-			echo "          echo \\\"apt-get -qy --only-upgrade install \\\$UPGRADE daemontools\\\"| at now +1 minute"
-			echo "        else"
-			echo "          echo \\\"checking updates for \\\$UPGRADE\\\""
-			echo "          apt-get -qy --only-upgrade install \\\$UPGRADE"
-			echo "        fi"
-			echo "      fi"
-			echo "    fi"
-			echo "  fi"
 			;;
 			rpm-dnf)
-			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 			echo "    dnf makecache --timer;"
-			echo "    if [ -d /service/fclient ] ; then"
-			echo "      if [ -f /usr/bin/at ] ; then"
-			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "        echo \\\"dnf update \\\$UPGRADE daemontools pistop\\\""|at now +1 minute
-			echo "      else"
-			echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "        dnf update \\\$UPGRADE pistop"
-			echo "      fi"
-			echo "    else"
-			echo "      if [ \$count -eq 0 ] ; then"
-			echo "        if [ -f /usr/bin/at ] ; then"
-			echo "          echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "          echo \\\"dnf update \\\$UPGRADE daemontools pistop\\\""|at now +1 minute
-			echo "        else"
-			echo "          echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "          dnf update \\\$UPGRADE pistop"
-			echo "        fi"
-			echo "      else"
-			echo "        if [ -f /usr/bin/at ] ; then"
-			echo "          echo \\\"checking updates for \\\$UPGRADE daemontools\\\""
-			echo "          echo \\\"dnf update \\\$UPGRADE daemontools\\\""|at now +1 minute
-			echo "        else"
-			echo "          echo \\\"checking updates for \\\$UPGRADE\\\""
-			echo "          dnf update \\\$UPGRADE"
-			echo "        fi"
-			echo "      fi"
-			echo "    fi"
-			echo "  fi"
 			;;
 			rpm-yum)
-			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 			echo "    yum makecache --timer;"
-			echo "    if [ -d /service/fclient ] ; then"
-			echo "      if [ -f /usr/bin/at ] ; then"
-			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "        echo \\\"yum update \\\$UPGRADE daemontools pistop\\\""|at now +1 minute
-			echo "      else"
-			echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "        yum update \\\$UPGRADE pistop"
-			echo "      fi"
-			echo "    else"
-			echo "      if [ \$count -eq 0 ] ; then"
-			echo "        if [ -f /usr/bin/at ] ; then"
-			echo "          echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "          echo \\\"yum update \\\$UPGRADE daemontools pistop\\\""|at now +1 minute
-			echo "        else"
-			echo "          echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "          yum update \\\$UPGRADE pistop"
-			echo "        fi"
-			echo "      else"
-			echo "        if [ -f /usr/bin/at ] ; then"
-			echo "          echo \\\"checking updates for \\\$UPGRADE daemontools\\\""
-			echo "          echo \\\"yum update \\\$UPGRADE daemontools\\\""|at now +1 minute
-			echo "        else"
-			echo "          echo \\\"checking updates for \\\$UPGRADE\\\""
-			echo "          yum update \\\$UPGRADE"
-			echo "        fi"
-			echo "      fi"
-			echo "    fi"
-			echo "  fi"
 			;;
 			rpm-suse)
-			echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
 			echo "    zypper refresh;"
-			echo "    if [ -d /service/fclient ] ; then"
-			echo "      if [ -f /usr/bin/at ] ; then"
-			echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "        echo \\\"zypper up \\\$UPGRADE daemontools pistop\\\""|at now +1 minute
-			echo "      else"
-			echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "        zypper up \\\$UPGRADE pistop"
-			echo "      fi"
-			echo "    else"
-			echo "      if [ \$count -eq 0 ] ; then"
-			echo "        if [ -f /usr/bin/at ] ; then"
-			echo "          echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
-			echo "          echo \\\"zypper up \\\$UPGRADE daemontools pistop\\\""|at now +1 minute
-			echo "        else"
-			echo "          echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-			echo "          zypper up \\\$UPGRADE pistop"
-			echo "        fi"
-			echo "      else"
-			echo "        if [ -f /usr/bin/at ] ; then"
-			echo "          echo \\\"checking updates for \\\$UPGRADE daemontools\\\""
-			echo "          echo \\\"zypper up \\\$UPGRADE daemontools\\\""|at now +1 minute
-			echo "        else"
-			echo "          echo \\\"checking updates for \\\$UPGRADE\\\""
-			echo "          zypper up \\\$UPGRADE"
-			echo "        fi"
-			echo "      fi"
-			echo "    fi"
-			echo "  fi"
 			;;
 		esac
+		echo "    if [ -d /service/fclient ] ; then"
+		echo "      if [ -f /usr/bin/at ] ; then"
+		echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+		case "$system" in
+			debian)
+			echo "        echo \\\"apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			;;
+			rpm-dnf)
+			echo "        echo \\\"dnf update \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			;;
+			rpm-yum)
+			echo "        echo \\\"yum update \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			;;
+			rpm-suse)
+			echo "        echo \\\"zypper up \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			;;
+		esac
+		echo "      else"
+		echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
+		case "$system" in
+			debian)
+			echo "        apt-get -qy --only-upgrade install \\\$UPGRADE pistop"
+			;;
+			rpm-dnf)
+			echo "        dnf update \\\$UPGRADE pistop"
+			;;
+			rpm-yum)
+			echo "        yum update \\\$UPGRADE pistop"
+			;;
+			rpm-suse)
+			echo "        zypper up \\\$UPGRADE pistop"
+			;;
+		esac
+		echo "      fi"
+		echo "    else"
+		echo "      if [ \$count -eq 0 ] ; then"
+		echo "        if [ -f /usr/bin/at ] ; then"
+		echo "          echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+		case "$system" in
+			debian)
+			echo "          echo \\\"apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			;;
+			rpm-dnf)
+			echo "          echo \\\"dnf update \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			;;
+			rpm-yum)
+			echo "          echo \\\"yum update \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			;;
+			rpm-suse)
+			echo "          echo \\\"zypper up \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			;;
+		esac
+		echo "        else"
+		echo "          echo \\\"checking updates for \\\$UPGRADE pistop\\\""
+		case "$system" in
+			debian)
+			echo "          apt-get -qy --only-upgrade install \\\$UPGRADE pistop"
+			;;
+			rpm-dnf)
+			echo "          dnf update \\\$UPGRADE pistop"
+			;;
+			rpm-yum)
+			echo "          yum update \\\$UPGRADE pistop"
+			;;
+			rpm-suse)
+			echo "          zypper up \\\$UPGRADE pistop"
+			;;
+		esac
+		echo "        fi"
+		echo "      else"
+		echo "        if [ -f /usr/bin/at ] ; then"
+		echo "          echo \\\"checking updates for \\\$UPGRADE daemontools\\\""
+		case "$system" in
+			debian)
+			echo "          echo \\\"apt-get -qy --only-upgrade install \\\$UPGRADE daemontools\\\"|at now +1 minute"
+			;;
+			rpm-dnf)
+			echo "          echo \\\"dnf update \\\$UPGRADE daemontools\\\"|at now +1 minute"
+			;;
+			rpm-yum)
+			echo "          echo \\\"yum update \\\$UPGRADE daemontools\\\"|at now +1 minute"
+			;;
+			rpm-suse)
+			echo "          echo \\\"zypper up \\\$UPGRADE daemontools\\\"|at now +1 minute"
+			;;
+		esac
+		echo "        else"
+		echo "          echo \\\"checking updates for \\\$UPGRADE\\\""
+		case "$system" in
+			debian)
+			echo "          apt-get -qy --only-upgrade install \\\$UPGRADE"
+			;;
+			rpm-dnf)
+			echo "          dnf update \\\$UPGRADE"
+			;;
+			rpm-yum)
+			echo "          yum update \\\$UPGRADE"
+			;;
+			rpm-suse)
+			echo "          zypper up \\\$UPGRADE"
+			;;
+		esac
+		echo "        fi"
+		echo "      fi"
+		echo "    fi"
+		echo "  fi"
 		echo "  if [ -n \\\"\\\$INTERVAL\\\" -a \\\$INTERVAL -gt 600 ] ; then"
 		echo "    exec sleep \\\$INTERVAL"
 		echo "  else"
@@ -380,7 +374,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.23 2021-04-27 17:35:41+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.24 2021-04-27 19:07:25+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
