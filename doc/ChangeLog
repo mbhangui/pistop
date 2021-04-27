@@ -36,3 +36,4 @@ Release 1.0 Start 28/08/2020
     fserver service
 23. create_service: create HOME variable for update service
 24. create_service: removed daemontools from auto-update
+25. create_service: use at command to run apt-get update

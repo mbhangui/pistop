@@ -8,7 +8,7 @@ Homepage: https://github.com/mbhangui/pistop
 
 Package: pistop
 Architecture: any
-Pre-Depends: daemontools, ucspi-tcp, util-linux, rsync
+Pre-Depends: daemontools, ucspi-tcp, util-linux, rsync, at
 Depends: coreutils, ${shlibs:Depends}, ${misc:Depends}
 Description: Start/Stop services on file server startup/shutdown
  pistop is a package that provides two services fclient and fserver.
