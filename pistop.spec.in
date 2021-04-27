@@ -127,7 +127,7 @@ if [ $argv1 -eq 2 ] ; then # upgrade
     if [ ! -d /service/$i ] ; then
       continue
     fi
-	# earlier installations did not have .options
+    # earlier installations did not have .options
     if [ ! -f /service/$i/variables/.options ] ; then
       %{__mkdir_p} /service/$i/variables
       options=`grep "^#" /service/$i/run | sed -n 2p | cut -c3-`
