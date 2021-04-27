@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.25  2021-04-27 22:23:40+05:30  Cprogrammer
+# do initial sleep of 5 minutes for network to be up
+#
 # Revision 1.24  2021-04-27 19:07:25+05:30  Cprogrammer
 # refactored code to make it smaller
 #
@@ -75,7 +78,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.24 2021-04-27 19:07:25+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.25 2021-04-27 22:23:40+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -127,7 +130,7 @@ add_service()
 	elif [ " $service_name" = " update" ] ; then
 		check_update_if_diff $servicedir/$service_name/variables/UPGRADE \
 			"ucspi-tcp mpdev libqmail mpd"
-		check_update_if_diff $servicedir/$service_name/variables/INTERVAL 600
+		check_update_if_diff $servicedir/$service_name/variables/INTERVAL 21600
 		check_update_if_diff $servicedir/$service_name/variables/DEBIAN_FRONTEND "noninteractive"
 		home=$(getent passwd 1000|cut -d: -f6)
 		if [ -n "$home" ] ; then
@@ -202,6 +205,7 @@ add_service()
 		echo ""
 		echo "exec 2>&1"
 		echo
+		echo "sleep 300"
 		echo "if [ -d /service/fserver ] ; then"
 		echo "  count=\$(ps -ef|grep /usr/libexec/pistop/server|egrep -v \"tcpserver|grep\"|wc -l)"
 		echo "  if [ \$count -gt 0 ] ; then"
@@ -334,7 +338,7 @@ add_service()
 		echo "  if [ -n \\\"\\\$INTERVAL\\\" -a \\\$INTERVAL -gt 600 ] ; then"
 		echo "    exec sleep \\\$INTERVAL"
 		echo "  else"
-		echo "    exec sleep 1800"
+		echo "    exec sleep 600"
 		echo "  fi"
 		echo "\""
 	    ) > $servicedir/$service_name/run
@@ -374,7 +378,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.24 2021-04-27 19:07:25+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.25 2021-04-27 22:23:40+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`

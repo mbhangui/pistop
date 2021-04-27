@@ -38,3 +38,4 @@ Release 1.0 Start 28/08/2020
 24. create_service: removed daemontools from auto-update
 25. create_service: use at command to run apt-get update
 26. server.c: removed unused variable pid
+27. create_service: do initial sleep of 5 minutes for network to be up
