@@ -2,13 +2,48 @@
 
 [![pistop C/C++ CI](https://github.com/mbhangui/pistop/actions/workflows/pistop-c-cpp.yml/badge.svg)](https://github.com/mbhangui/pistop/actions/workflows/pistop-c-cpp.yml)
 
-I use a Raspberry PI4 to provide NFSv4 and Samba shares. This allows me to share my Music Directory to all clients. These clients are mostly Single Board Computers (SBCs), mix of [Raspbery PIs](https://en.wikipedia.org/wiki/Raspberry_Pi), [Banana PIs](https://en.wikipedia.org/wiki/Banana_Pi), [Allo sparky SBC](https://www.allo.com/sparky/sparky-sbc.html). All of these mount the filesystem using automount. Music playback is done via [Music Player Daemon](https://www.musicpd.org/). These SBCs have been installed in each of my room (Living Room, Music Room, two bedrooms and one device which is connected to a Headphone amp. The power supply of these boards are connected to WiFI switches which can be remotely turned off.
+I use a Raspberry PI4 to provide NFSv4 and Samba shares. An external 3TB hard disk is connected to the USB3 port of the PI4 as /var/lib/mpd/MDrive. This disk has the following important directories at the root
+
+1. Music     - This has all the music files
+2. data      - This stores all data for [mpdev](https://github.com/mbhangui/mpdev). mpdev is used for storing the play counts, ratings, karma (a value indicating how much a particular song is liked by you).
+3. playlists - This stores all playlists
+4. cache     - The mpd config uses this directory for storing the mpd database information
+
+This scheme allows me to share my Music Directory to all clients. They all mount /var/lib/mpd/MDrive of PI4 to access the <u>data</u> and <u>Music</u> directories on the drive. These clients are mostly Single Board Computers (SBCs), mix of [Raspbery PIs](https://en.wikipedia.org/wiki/Raspberry_Pi), [Banana PIs](https://en.wikipedia.org/wiki/Banana_Pi), [Allo sparky SBC](https://www.allo.com/sparky/sparky-sbc.html). All of these mount the filesystem using automount. Music playback on clients is done via [Music Player Daemon](https://www.musicpd.org/). These SBCs have been installed in each of my room (Living Room, Music Room, two bedrooms and one device which is connected to a Headphone amp. The power supply of these boards are connected to WiFI switches which can be remotely turned off. The PI4 also runs mpd, but the configuration provides proxy database service for all clients. When you add music, it needs to be added to external hard disk mounted on PI4. mpd automatically updates it's database. Nothing needs to be done on the clients. They all get the updated database instantly.
+
+```
+# mpd.conf database configuration entry for PI4
+music_directory     "/var/lib/mpd/MDrive/Music"
+playlist_directory  "/var/lib/mpd/MDrive/playlists"
+database {
+  plugin          "simple"
+  path            "/var/lib/mpd/MDrive/data/tag_cache.PI4"
+  cache_directory "/var/lib/mpd/MDrive/cache"
+}
+
+# mpd.conf database configuration entry for client
+music_directory     "/var/lib/mpd/MDrive/Music"
+playlist_directory  "/var/lib/mpd/MDrive/playlists"
+database {
+    plugin          "proxy"
+    host            "pi4"
+    port            "6600"
+}
+
+The pi4 above refers to host in /etc/hosts or the IP address the PI4 server. For me it is
+192.168.2.101   pi4
+```
 
 The problem **pistop** solves is a synchronized mounting of the shared Music Directory, starting of mpd and automount service as soon as the PI4 server is powered on and up. This is achieved by having a service known as **fclient** on the clients and a service known as **fserver** on the NFSv4 server (PI4). These services use [supervise](https://en.wikipedia.org/wiki/Daemontools), **tcpclient**, **tcpserver** from the [ucspi-tcp](https://cr.yp.to/ucspi-tcp.html) package. I use the `fclient` service on my laptop too. It automatically starts the mpd daemon, the moment it sees the NFSv4 server (PI4) up running the `fserver` service. In case, I'm done with listening to Music, I shutdown the PI4 server. The `fclient` service detects that and stops the automount service, unmounts the NFS share and stops the mpd daemon. This prevents programs like `ls` from hanging when doing a listing of your home directory.
 
+There are two other features of **pistop**.
+
+* Backing up configuration and important files. You need to create environment variables <b>BACKUP</b> and <b>DEST</b> in <u>/service/fclient/variables</u> or <u>/service/fserver/variables</u> directory. The <b>fserver</b> runs on your file server while the <b>fclient</b> runs on the client devices.
+* Automatic update of your device. You need to have packages that need automatic updation in the environment variable <b>UPGRADE</b> in <u>/service/update/variables</u> directory.
+
 So when I retire for the night to get a good night sleep, I use an android app known as `ssh button` to shutdown the NFSv4 server. The moment the server shuts down, all my clients shutdown together. Using home automation, I then switch off the power output to each and very adaptor thereby saving around 0.05 kwhr of electricity per device every day. The PI4 consumes around 2 units per month if you leave them switched on 24x7. You could say that these SBC consume miniscule power, but this kind of philosophy has led us mankind to plunder this planet. Global Warming is a stark reality of the day and we should try to conserve electricity as much as possible. Please note that if you use wifi switches to switch off devices, these switches by itself will consume 1.5-2 watts even when off, resulting in around 1.5 Units of electricity every month.
 
-You can take a look at the files, configuration for my server and client in the directory [example_config](https://github.com/mbhangui/pistop/tree/master/example_config). Along with pistop, I use [mpd event watcher daemon](https://github.com/mbhangui/mpdev) to maintain playcounts and ratings. This is something that mpd(1) doesn't provide out of the box.
+You can take a look at the files, configuration for my server and client in the directory [example_config](https://github.com/mbhangui/pistop/tree/master/example_config). Along with pistop, I use [mdev](https://github.com/mbhangui/mpdev) to maintain playcounts and ratings. This is something that mpd(1) doesn't provide out of the box.
 
 ## INSTALLATION
 
@@ -17,7 +52,7 @@ On the server (use the IP Address of your own server). This will create fserver 
 ```
 # apt-get update
 # apt-get install pistop
-# /usr/libexec/pistop/create_service --servicedir=/service --service_name=fserver --host=192.168.1.1 --port=5555 --add-service
+# /usr/libexec/pistop/create_service --servicedir=/service --service_name=fserver --host=192.168.1.101 --port=5555 --add-service
 ```
 
 On each client (use IP Address of your server). This will create fclient supervise service in /service
@@ -25,7 +60,7 @@ On each client (use IP Address of your server). This will create fclient supervi
 ```
 # apt-get update
 # apt-get install pistop
-# /usr/libexec/pistop/create_service --servicedir=/service --service_name=fclient --host=192.168.1.1 --port=5555 --add-service
+# /usr/libexec/pistop/create_service --servicedir=/service --service_name=fclient --host=192.168.1.101 --port=5555 --add-service
 ```
 
 If you want to have your  clients shutdown itself when the server is powered off, create `POWER_OFF` enviroment variable by doing this
