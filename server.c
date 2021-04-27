@@ -1,5 +1,8 @@
 /*
  * $Log: server.c,v $
+ * Revision 1.5  2021-04-27 12:49:31+05:30  Cprogrammer
+ * display pid of self when quitting
+ *
  * Revision 1.4  2020-08-31 21:18:21+05:30  Cprogrammer
  * fixed compiler warnings
  *
@@ -66,14 +69,13 @@ sigterm()
 	_exit(1);
 }
 
-#ifdef DEBUG
 static char     strnum[FMT_ULONG];
-#endif
 
 int
 main(int argc, char **argv)
 {
-	int             opt, length, dataTimeout = -1, retval;
+	int             i, opt, length, dataTimeout = -1, retval;
+	pid_t           pid;
 	struct timeval  timeout;
 	struct timeval *tptr;
 	time_t          last_timeout;
@@ -133,9 +135,10 @@ main(int argc, char **argv)
 			if ((length = read(0, buffer, sizeof(buffer))) == -1)
 				strerr_die2sys(111, FATAL, "read-network: ");
 			if (!length) {
-				if (substdio_puts(subfderr, "client dropped connection\n") == -1)
-					strerr_die2sys(111, FATAL, "write: ");
-				if (substdio_flush(subfderr) == -1)
+				strnum[i = fmt_ulong(strnum, getpid())] = 0;
+				if (substdio_put(subfderr, strnum, i) == -1 ||
+						substdio_put(subfderr, ": client dropped connection\n", 28) == -1 ||
+						substdio_flush(subfderr) == -1)
 					strerr_die2sys(111, FATAL, "write: ");
 				break;
 			} 
