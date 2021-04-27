@@ -1,5 +1,8 @@
 /*
  * $Log: server.c,v $
+ * Revision 1.6  2021-04-27 18:33:09+05:30  Cprogrammer
+ * removed unused variable pid
+ *
  * Revision 1.5  2021-04-27 12:49:31+05:30  Cprogrammer
  * display pid of self when quitting
  *
@@ -75,7 +78,6 @@ int
 main(int argc, char **argv)
 {
 	int             i, opt, length, dataTimeout = -1, retval;
-	pid_t           pid;
 	struct timeval  timeout;
 	struct timeval *tptr;
 	time_t          last_timeout;
