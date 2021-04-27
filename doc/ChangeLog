@@ -34,3 +34,4 @@ Release 1.0 Start 28/08/2020
 20. create_service: added update service
 21. create_service: skip upgrade of pistop when clients are connected to
     fserver service
+22. create_service: run update with nohup
