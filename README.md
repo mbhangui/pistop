@@ -39,7 +39,7 @@ The problem **pistop** solves is a synchronized mounting of the shared Music Dir
 There are two other features of **pistop**.
 
 * Backing up configuration and important files. You need to create environment variables <b>BACKUP</b> and <b>DEST</b> in <u>/service/fclient/variables</u> or <u>/service/fserver/variables</u> directory. The <b>fserver</b> runs on your file server while the <b>fclient</b> runs on the client devices.
-* Automatic update of your device. You need to have packages that need automatic updation in the environment variable <b>UPGRADE</b> in <u>/service/update/variables</u> directory.
+* Automatic update of your device. You need to have packages that need automatic updation in the environment variable <b>UPGRADE</b> in <u>/service/update/variables</u> directory. The at(1) command is used to update packages. You can have any package listed in the file <u>/service/update/variables/UPGRADE</u>.
 
 So when I retire for the night to get a good night sleep, I use an android app known as `ssh button` to shutdown the NFSv4 server. The moment the server shuts down, all my clients shutdown together. The PI4 has a design problem. It doesn't shut off the power to the USB3 ports when shutdown. Due to his, any hard disk connected to PI4 will not spin down when the PI4 is shutdown. I use [uhubctl](https://github.com/mvp/uhubctl) to shutdown power to the usb port. `uhubctl` is utility to control USB power per-port on smart USB hubs. I have also created a systemd service /lib/systemd/system/usb3-poweroff.service to use uhubctl to turn off power.
 
