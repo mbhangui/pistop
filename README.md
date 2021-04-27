@@ -41,7 +41,41 @@ There are two other features of **pistop**.
 * Backing up configuration and important files. You need to create environment variables <b>BACKUP</b> and <b>DEST</b> in <u>/service/fclient/variables</u> or <u>/service/fserver/variables</u> directory. The <b>fserver</b> runs on your file server while the <b>fclient</b> runs on the client devices.
 * Automatic update of your device. You need to have packages that need automatic updation in the environment variable <b>UPGRADE</b> in <u>/service/update/variables</u> directory.
 
-So when I retire for the night to get a good night sleep, I use an android app known as `ssh button` to shutdown the NFSv4 server. The moment the server shuts down, all my clients shutdown together. Using home automation, I then switch off the power output to each and very adaptor thereby saving around 0.05 kwhr of electricity per device every day. The PI4 consumes around 2 units per month if you leave them switched on 24x7. You could say that these SBC consume miniscule power, but this kind of philosophy has led us mankind to plunder this planet. Global Warming is a stark reality of the day and we should try to conserve electricity as much as possible. Please note that if you use wifi switches to switch off devices, these switches by itself will consume 1.5-2 watts even when off, resulting in around 1.5 Units of electricity every month.
+So when I retire for the night to get a good night sleep, I use an android app known as `ssh button` to shutdown the NFSv4 server. The moment the server shuts down, all my clients shutdown together. The PI4 has a design problem. It doesn't shut off the power to the USB3 ports when shutdown. Due to his, any hard disk connected to PI4 will not spin down when the PI4 is shutdown. I use [uhubctl](https://github.com/mvp/uhubctl) to shutdown power to the usb port. `uhubctl` is utility to control USB power per-port on smart USB hubs. I have also created a systemd service /lib/systemd/system/usb3-poweroff.service to use uhubctl to turn off power.
+
+```
+[Unit]
+Description=Turns off usb3 power on shutdown/reboot
+DefaultDependencies=no
+After=umount.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/uhubctl -a 0 -l 2
+
+[Install]
+WantedBy=halt.target poweroff.target
+```
+
+The above will work if your drive is unmounted. To achieve unmounting of drives, I call my own shutdown script (pishutdown).
+
+```
+/home/pi/bin/pishutdown
+#!/bin/sh
+if [ $# -gt 1 ] ; then
+  if [ " $1" = " -h" ] ; then
+    # shut down mpdev service
+    /usr/bin/svc -d /service/fserver /service/mpdev
+    sync
+    systemctl stop svscan mpd smbd nmbd nfs-server
+    umount /home/pi/MDrive
+    sync
+  fi
+fi
+exec /sbin/shutdown $*
+```
+
+Using home automation, I then switch off the power output to each and very adaptor thereby saving around 0.05 kwhr of electricity per device every day. The PI4 consumes around 2 units per month if you leave them switched on 24x7. You could say that these SBC consume miniscule power, but this kind of philosophy has led us mankind to plunder this planet. Global Warming is a stark reality of the day and we should try to conserve electricity as much as possible. Please note that if you use wifi switches to switch off devices, these switches by itself will consume 1.5-2 watts even when off, resulting in around 1.5 Units of electricity every month.
 
 You can take a look at the files, configuration for my server and client in the directory [example_config](https://github.com/mbhangui/pistop/tree/master/example_config). Along with pistop, I use [mdev](https://github.com/mbhangui/mpdev) to maintain playcounts and ratings. This is something that mpd(1) doesn't provide out of the box.
 
