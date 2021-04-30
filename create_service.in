@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.28  2021-04-30 21:37:14+05:30  Cprogrammer
+# fixed QMAILQUEUE for root user
+#
 # Revision 1.27  2021-04-30 12:17:36+05:30  Cprogrammer
 # reworked update script
 #
@@ -84,7 +87,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.27 2021-04-30 12:17:36+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.28 2021-04-30 21:37:14+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -171,7 +174,7 @@ add_service()
 			# user root
 			home=$(getent passwd root|cut -d: -f6)
 			mkdir -p $home/.defaultqueue
-			check_update_if_diff $home/.defaultqueue/QMAILQUEUE "/usr/sbin/qmail-deliver"
+			check_update_if_diff $home/.defaultqueue/QMAILQUEUE "/usr/sbin/qmail-direct"
 
 			# user alias
 			home=$(getent passwd alias|cut -d: -f6)
@@ -381,7 +384,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.27 2021-04-30 12:17:36+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.28 2021-04-30 21:37:14+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
