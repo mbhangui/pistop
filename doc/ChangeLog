@@ -41,3 +41,5 @@ Release 1.0 Start 28/08/2020
 27. create_service: do initial sleep of 5 minutes for network to be up
 - 29/04/2021
 28. create Maildir for mail delivery
+- 30/04/2021
+29. create_service: reworked update script

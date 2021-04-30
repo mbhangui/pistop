@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.27  2021-04-30 12:17:36+05:30  Cprogrammer
+# reworked update script
+#
 # Revision 1.26  2021-04-29 23:05:50+05:30  Cprogrammer
 # create Maildir for mail delivery
 #
@@ -81,7 +84,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.26 2021-04-29 23:05:50+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.27 2021-04-30 12:17:36+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -139,11 +142,11 @@ add_service()
 		if [ -n "$home" ] ; then
 			check_update_if_diff $servicedir/$service_name/variables/HOME $home
 		fi
-		if [ -f /usr/sbin/qmail-deliver ] ; then
+		if [ -f /usr/sbin/qmail-direct ] ; then
 			# user 1000
 			user=$(getent passwd 1000|cut -d: -f1)
-			gid=$(getent passwd 1000|cut -d: -f4)
 			if [ -n "$user" ] ; then
+				check_update_if_diff $servicedir/$service_name/variables/LOGNAME $user
 				grep -w $user /etc/indimail/control/direct_mail_users >/dev/null 2>&1
 				if [ $? -ne 0 ] ; then
 					echo $user >> /etc/indimail/control/direct_mail_users
@@ -151,11 +154,18 @@ add_service()
 			fi
 			if [ -n "$home" ] ; then
 				mkdir -p $home/.defaultqueue
-				check_update_if_diff $home/.defaultqueue/QMAILQUEUE "/usr/sbin/qmail-deliver"
+				if [ ! -f $home/.defaultqueue/QMAILQUEUE ] ; then
+					check_update_if_diff $home/.defaultqueue/QMAILQUEUE "/usr/sbin/qmail-direct"
+				fi
 				mkdir -p $home/Maildir/new
 				mkdir -p $home/Maildir/cur
 				mkdir -p $home/Maildir/tmp
-				chown -R 1000:"$gid" $home/Maildir
+				gid=$(getent passwd 1000|cut -d: -f4)
+				if [ -n "$gid" ] ; then
+					chown -R 1000:"$gid" $home/Maildir
+				else
+					chown -R 1000:1000 $home/Maildir
+				fi
 			fi
 
 			# user root
@@ -243,134 +253,89 @@ add_service()
 		echo ""
 		echo "exec 2>&1"
 		echo
+		echo "if [ -f variables/UPGRADE ] ; then"
+		echo "  UPDATE=\$(cat variables/UPGRADE)"
+		echo "fi"
+		echo "if [ -x /usr/bin/at ] ; then"
+		echo "  UPDATE=\"daemontools \$UPDATE\""
+		echo "else"
+		echo "  echo \\\"at command not found. Will not upgrade daemontools\\\""
+		echo "fi"
 		echo "sleep 300"
 		echo "if [ -d /service/fserver ] ; then"
 		echo "  count=\$(ps -ef|grep /usr/libexec/pistop/server|egrep -v \"tcpserver|grep\"|wc -l)"
 		echo "  if [ \$count -gt 0 ] ; then"
 		echo "    echo \\\"\$count clients already running. Will not upgrade pistop\\\""
+		echo "  else"
+		echo "    UPDATE=\"pistop \$UPDATE\""
 		echo "  fi"
+		echo "else"
+		echo "  UPDATE=\"pistop \$UPDATE\""
 		echo "fi"
 		echo "exec /usr/bin/envdir variables sh -c \""
-		echo "  echo \\\"starting update service\\\";"
-		echo "  if [ -n \\\"\\\$UPGRADE\\\" ] ; then"
+		echo "  echo \\\"starting update service\\\""
+		echo "  if [ -n \\\"\$UPDATE\\\" ] ; then"
+		echo "    echo \\\"checking updates for \$UPDATE\\\""
 		case "$system" in
 			debian)
-			echo "    apt-get -qy update;"
+			echo "    apt-get -qy update"
+			echo "    list=\\\$(apt list --upgradable \$UPDATE|grep -v List|wc -l)"
 			;;
 			rpm-dnf)
-			echo "    dnf makecache --timer;"
+			echo "    dnf makecache --timer"
+			echo "    dnf check-update \$UPDATE >/dev/null 2>&1"
+			echo "    if [ \\\$? -ne 100 ] ; then"
+			echo "      list=\\\"\\\""
+			echo "    else"
+			echo "      list=\\\"upgrade\\\""
+			echo "    fi"
 			;;
 			rpm-yum)
-			echo "    yum makecache --timer;"
+			echo "    yum makecache --timer"
+			echo "    yum check-update \$UPDATE >/dev/null 2>&1"
+			echo "    if [ \\\$? -ne 100 ] ; then"
+			echo "      list=\\\"\\\""
+			echo "    else"
+			echo "      list=\\\"upgrade\\\""
+			echo "    fi"
 			;;
 			rpm-suse)
-			echo "    zypper refresh;"
+			echo "    zypper refresh"
+			echo "    list=\\\$(zypper list-updates \$UPDATE|grep -v List|wc -l)"
 			;;
 		esac
-		echo "    if [ -d /service/fclient ] ; then"
-		echo "      if [ -f /usr/bin/at ] ; then"
-		echo "        echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
+		echo "    if [ -z \\\"\\\$list\\\" ] ; then"
+		echo "      echo \\\"no upgrade found\\\""
+		echo "    elif [ -x /usr/bin/at ] ; then"
 		case "$system" in
 			debian)
-			echo "        echo \\\"apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			echo "      echo \\\"apt-get -qy --only-upgrade install \$UPDATE\\\"|at now +1 minute"
 			;;
 			rpm-dnf)
-			echo "        echo \\\"dnf update \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			echo "      echo \\\"dnf update \$UPDATE\\\"|at now +1 minute"
 			;;
 			rpm-yum)
-			echo "        echo \\\"yum update \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			echo "      echo \\\"yum update \$UPDATE\\\"|at now +1 minute"
 			;;
 			rpm-suse)
-			echo "        echo \\\"zypper up \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			echo "      echo \\\"zypper up \$UPDATE\\\"|at now +1 minute"
 			;;
 		esac
-		echo "      else"
-		echo "        echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-		case "$system" in
-			debian)
-			echo "        apt-get -qy --only-upgrade install \\\$UPGRADE pistop"
-			;;
-			rpm-dnf)
-			echo "        dnf update \\\$UPGRADE pistop"
-			;;
-			rpm-yum)
-			echo "        yum update \\\$UPGRADE pistop"
-			;;
-			rpm-suse)
-			echo "        zypper up \\\$UPGRADE pistop"
-			;;
-		esac
-		echo "      fi"
 		echo "    else"
-		echo "      if [ \$count -eq 0 ] ; then"
-		echo "        if [ -f /usr/bin/at ] ; then"
-		echo "          echo \\\"checking updates for \\\$UPGRADE daemontools pistop\\\""
 		case "$system" in
 			debian)
-			echo "          echo \\\"apt-get -qy --only-upgrade install \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			echo "      apt-get -qy --only-upgrade install \$UPDATE"
 			;;
 			rpm-dnf)
-			echo "          echo \\\"dnf update \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			echo "      dnf update \$UPDATE"
 			;;
 			rpm-yum)
-			echo "          echo \\\"yum update \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			echo "      yum update \$UPDATE"
 			;;
 			rpm-suse)
-			echo "          echo \\\"zypper up \\\$UPGRADE daemontools pistop\\\"|at now +1 minute"
+			echo "      zypper up \$UPDATE"
 			;;
 		esac
-		echo "        else"
-		echo "          echo \\\"checking updates for \\\$UPGRADE pistop\\\""
-		case "$system" in
-			debian)
-			echo "          apt-get -qy --only-upgrade install \\\$UPGRADE pistop"
-			;;
-			rpm-dnf)
-			echo "          dnf update \\\$UPGRADE pistop"
-			;;
-			rpm-yum)
-			echo "          yum update \\\$UPGRADE pistop"
-			;;
-			rpm-suse)
-			echo "          zypper up \\\$UPGRADE pistop"
-			;;
-		esac
-		echo "        fi"
-		echo "      else"
-		echo "        if [ -f /usr/bin/at ] ; then"
-		echo "          echo \\\"checking updates for \\\$UPGRADE daemontools\\\""
-		case "$system" in
-			debian)
-			echo "          echo \\\"apt-get -qy --only-upgrade install \\\$UPGRADE daemontools\\\"|at now +1 minute"
-			;;
-			rpm-dnf)
-			echo "          echo \\\"dnf update \\\$UPGRADE daemontools\\\"|at now +1 minute"
-			;;
-			rpm-yum)
-			echo "          echo \\\"yum update \\\$UPGRADE daemontools\\\"|at now +1 minute"
-			;;
-			rpm-suse)
-			echo "          echo \\\"zypper up \\\$UPGRADE daemontools\\\"|at now +1 minute"
-			;;
-		esac
-		echo "        else"
-		echo "          echo \\\"checking updates for \\\$UPGRADE\\\""
-		case "$system" in
-			debian)
-			echo "          apt-get -qy --only-upgrade install \\\$UPGRADE"
-			;;
-			rpm-dnf)
-			echo "          dnf update \\\$UPGRADE"
-			;;
-			rpm-yum)
-			echo "          yum update \\\$UPGRADE"
-			;;
-			rpm-suse)
-			echo "          zypper up \\\$UPGRADE"
-			;;
-		esac
-		echo "        fi"
-		echo "      fi"
 		echo "    fi"
 		echo "  fi"
 		echo "  if [ -n \\\"\\\$INTERVAL\\\" -a \\\$INTERVAL -gt 600 ] ; then"
@@ -416,7 +381,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.26 2021-04-29 23:05:50+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.27 2021-04-30 12:17:36+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
