@@ -47,3 +47,4 @@ Release 1.0 Start 28/08/2020
 - 01/05/2021
 31. create_service: reworked creation script for update service
 32. create_service: create QUEUE_BASE env variable
+33. create_service: create USER env variable
