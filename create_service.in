@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.34  2021-05-02 19:21:19+05:30  Cprogrammer
+# fixed update not getting skipped when no updates available
+#
 # Revision 1.33  2021-05-02 17:38:49+05:30  Cprogrammer
 # fix for atd override.conf
 #
@@ -102,7 +105,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.33 2021-05-02 17:38:49+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.34 2021-05-02 19:21:19+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -326,7 +329,7 @@ add_service()
 			echo "    list=\\\$(zypper list-updates \$UPDATE|grep -v List|wc -l)"
 			;;
 		esac
-		echo "    if [ -z \\\"\\\$list\\\" ] ; then"
+		echo "    if [ -z \\\"\\\$list\\\" -o \\\"\\\$list\\\" -eq 0 ] ; then"
 		echo "      echo \\\"no upgrade found\\\""
 		echo "    elif [ -x /usr/bin/at ] ; then"
 		case "$system" in
@@ -404,7 +407,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.33 2021-05-02 17:38:49+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.34 2021-05-02 19:21:19+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
