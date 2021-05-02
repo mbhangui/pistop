@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.33  2021-05-02 17:38:49+05:30  Cprogrammer
+# fix for atd override.conf
+#
 # Revision 1.32  2021-05-02 10:06:07+05:30  Cprogrammer
 # create env variables for atd service for mail to work using qmail-direct
 #
@@ -99,7 +102,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.32 2021-05-02 10:06:07+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.33 2021-05-02 17:38:49+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -200,7 +203,6 @@ add_service()
 			mkdir -p /lib/systemd/system/atd.service.d
 			(
 			echo "[Service]"
-			echo "Type=notify"
 			echo "EnvironmentFile=/service/update/variables/.variables"
 			) > /lib/systemd/system/atd.service.d/override.conf
 			systemctl daemon-reload
@@ -402,7 +404,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.32 2021-05-02 10:06:07+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.33 2021-05-02 17:38:49+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
