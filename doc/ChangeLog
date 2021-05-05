@@ -52,3 +52,5 @@ Release 1.0 Start 28/08/2020
 34. create env variables for atd service for mail to work using qmail-direct
 35. create_service: fixed /lib/systemd/system/at.service.d/override.conf
 36. create_service: fixed update not getting skipped when no updates available
+- 05/05/2021
+37. create_service: added logging statements
