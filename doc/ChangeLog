@@ -54,3 +54,6 @@ Release 1.0 Start 28/08/2020
 36. create_service: fixed update not getting skipped when no updates available
 - 05/05/2021
 37. create_service: added logging statements
+- 06/05/2021
+38. create_service: skip daemontools if clients are connected to fserver
+    service

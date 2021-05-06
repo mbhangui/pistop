@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.36  2021-05-06 13:34:21+05:30  Cprogrammer
+# skip daemontools if clients are connected to fserver service
+#
 # Revision 1.35  2021-05-05 13:35:32+05:30  Cprogrammer
 # added logging statements
 #
@@ -108,7 +111,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.35 2021-05-05 13:35:32+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.36 2021-05-06 13:34:21+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -296,8 +299,8 @@ add_service()
 		echo "if [ -d /service/fserver ] ; then"
 		echo "  count=\$(ps -ef|grep /usr/libexec/pistop/server|egrep -v \"tcpserver|grep\"|wc -l)"
 		echo "  if [ \$count -gt 0 ] ; then"
-		echo "    echo \\\"\$count clients already running. Will not upgrade pistop\\\""
-		echo "    UPDATE=\$(cat variables/UPGRADE|sed -e 's{pistop{{g')"
+		echo "    echo \\\"\$count clients already running. Will not upgrade pistop, daemontools\\\""
+		echo "    UPDATE=\$(cat variables/UPGRADE|sed -e 's{pistop{{g' -e 's{daemontools{{g')"
 		echo "  fi"
 		echo "fi"
 		echo "exec /usr/bin/envdir variables sh -c \""
@@ -413,7 +416,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.35 2021-05-05 13:35:32+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.36 2021-05-06 13:34:21+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
