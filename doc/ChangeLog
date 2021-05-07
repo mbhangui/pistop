@@ -57,3 +57,5 @@ Release 1.0 Start 28/08/2020
 - 06/05/2021
 38. create_service: skip daemontools if clients are connected to fserver
     service
+- 07/05/2021
+39. create_service: skip updating UPGRADE, INTERVAL env variables

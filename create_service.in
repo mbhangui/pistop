@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.37  2021-05-07 13:12:11+05:30  Cprogrammer
+# skip updating UPGRADE, INTERVAL env variables
+#
 # Revision 1.36  2021-05-06 13:34:21+05:30  Cprogrammer
 # skip daemontools if clients are connected to fserver service
 #
@@ -111,7 +114,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.36 2021-05-06 13:34:21+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.37 2021-05-07 13:12:11+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -161,9 +164,13 @@ add_service()
 			check_update_if_diff $servicedir/$service_name/variables/HOME $home
 		fi
 	elif [ " $service_name" = " update" ] ; then
-		check_update_if_diff $servicedir/$service_name/variables/UPGRADE \
-			"ucspi-tcp mpdev libqmail indimail-mini daemontools pistop mpd"
-		check_update_if_diff $servicedir/$service_name/variables/INTERVAL 21600
+		if [ ! -f $servicedir/$service_name/variables/UPGRADE ] ; then
+			check_update_if_diff $servicedir/$service_name/variables/UPGRADE \
+				"ucspi-tcp mpdev libqmail indimail-mini daemontools pistop mpd"
+		fi
+		if [ ! -f $servicedir/$service_name/variables/INTERVAL ] ; then
+			check_update_if_diff $servicedir/$service_name/variables/INTERVAL 21600
+		fi
 		check_update_if_diff $servicedir/$service_name/variables/DEBIAN_FRONTEND "noninteractive"
 		pihome=$(getent passwd 1000|cut -d: -f6)
 		piuser=$(getent passwd 1000|cut -d: -f1)
@@ -416,7 +423,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.36 2021-05-06 13:34:21+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.37 2021-05-07 13:12:11+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
