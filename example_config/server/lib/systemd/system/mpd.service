@@ -2,17 +2,11 @@
 Description=Music Player Daemon
 Documentation=man:mpd(1) man:mpd.conf(5)
 Documentation=file:///usr/share/doc/mpd/user-manual.html
-RequiresMountsFor=/home/pi/Music
-Wants=systemd-networkd-wait-online.service
-After=network.target sound.target local-fs.target time-sync.target systemd-networkd-wait-online.service
 
 [Service]
 Type=notify
 EnvironmentFile=/etc/default/mpd
-ExecStartPre=/bin/chown -R pi:pi /var/log/mpd
 ExecStart=/usr/bin/chrt 99 /usr/bin/mpd --no-daemon $MPDCONF
-ExecStartPost=/usr/bin/svc -u /service/mpdev /service/fserver
-ExecStop=/usr/bin/svc -d /service/mpdev /service/fserver
 SupplementaryGroups=audio
 
 # Enable this setting to ask systemd to watch over MPD, see
