@@ -129,6 +129,22 @@ tmpfs                                     /var/tmp        tmpfs defaults,size=20
 
 NOTE: You only need to add the line having `UUID=` in your /etc/fstab. Your UUID for your external drive will be different. Use blkid(1) to find that out.
 
+**Update Service**
+
+You can have your SBC automatically updated. You can have list of packages that the service will automatically update by creating the environment variable UPGRADE. The default value for this environment variable is `ucspi-tcp mpdev libqmail indimail-mini daemontools pistop mpd`. You can edit the file /service/update/variables/UPGRADE to update the environment variable.
+
+```
+$ sudo /usr/libexec/pistop/create_service --service_name=update --add-service
+```
+
+**RSYNC Service**
+
+You can have a rsync service running on your SBC. rsync service is useful if you want to transfer music files from any computer to the SBC. This can be created by running
+
+```
+$ sudo /usr/libexec/pistop/create_service --service_name=rsync --add-service
+```
+
 ## Prebuilt Binaries
 
 Prebuilt binaries using openSUSE Build Service are available for pistop for

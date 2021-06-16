@@ -174,5 +174,6 @@ log_dir=%{logdir}/${service_name}
 echo "stopping and removing ${service_name} service"
 /usr/libexec/pistop/create_service --servicedir=/service --service_name=${service_name} --del-service
 /usr/libexec/pistop/create_service --servicedir=/service --service_name=update --del-service
+/usr/libexec/pistop/create_service --servicedir=/service --service_name=rsync --del-service
 
 %changelog

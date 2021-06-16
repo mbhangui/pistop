@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.39  2021-06-16 19:14:13+05:30  Cprogrammer
+# added rsync service
+#
 # Revision 1.38  2021-06-06 11:04:16+05:30  Cprogrammer
 # sleep after backup
 #
@@ -117,7 +120,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.38 2021-06-06 11:04:16+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.39 2021-06-16 19:14:13+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -133,7 +136,7 @@ add_service()
 	if [ $# -ne 2 ] ; then
 		(
 		echo -n "USAGE: create_service --servicedir=path "
-		echo -n "--service_name=fclient|fserver --host=host "
+		echo -n "--service_name=fclient|fserver|update|rsync --host=host "
 		echo -n "--port=port --add-service"
 		echo
 		) 1>&2
@@ -142,6 +145,9 @@ add_service()
 	if [ ! -d $logdir ] ; then
 		mkdir -p $logdir
 		chown qmaill:nofiles $logdir
+	fi
+	if [ " $service_name" = " rsync" ] ; then
+		service_name="$service_name.875"
 	fi
 	mkdir -p $servicedir/$service_name/log
 	(
@@ -166,6 +172,12 @@ add_service()
 		if [ -n "$home" ] ; then
 			check_update_if_diff $servicedir/$service_name/variables/HOME $home
 		fi
+	elif [ " $service_name" = " rsync.875" ] ; then
+		check_update_if_diff $servicedir/$service_name/variables/LOCALIP 0
+		check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
+		check_update_if_diff $servicedir/$service_name/variables/MAXPERIP 4
+		check_update_if_diff $servicedir/$service_name/variables/PORT 875
+		check_update_if_diff $servicedir/$service_name/variables/SOFT_MEM 26214400
 	elif [ " $service_name" = " update" ] ; then
 		if [ ! -f $servicedir/$service_name/variables/UPGRADE ] ; then
 			check_update_if_diff $servicedir/$service_name/variables/UPGRADE \
@@ -249,6 +261,7 @@ add_service()
 		echo "    sleep 10; @prefix@/libexec/pistop/client sleep 2>&1\""
 		echo "fi"
 		) > $servicedir/$service_name/run
+		chmod +x $servicedir/$service_name/run
 		if [ ! -f $servicedir/$service_name/variables/POWER_OFF ] ; then
 			> $servicedir/$service_name/variables/POWER_OFF
 		fi
@@ -271,12 +284,28 @@ add_service()
 		echo "    -u 0 -g 0 \\\$HOST \\\$PORT \\"
 		echo "  @prefix@/libexec/pistop/server\""
 		) > $servicedir/$service_name/run
+		chmod +x $servicedir/$service_name/run
 		(
 		echo "#!/bin/sh"
 		echo "killall /usr/libexec/pistop/server"
 		echo "exit 0"
 		) > $servicedir/$service_name/shutdown
 		chmod +x $servicedir/$service_name/shutdown
+	elif [ " $service_name" = " rsync.875" ] ; then
+		(
+		echo "#!/bin/sh"
+		echo "# $prog_args"
+		echo ""
+		echo "exec 2>&1"
+		echo
+		echo "exec /usr/bin/envdir ./variables sh -c \""
+		echo "exec /usr/bin/softlimit -m \\\$SOFT_MEM -o 1024 \\"
+		echo "  /usr/bin/tcpserver -v -H -R -l \\\$LOCALIP \\"
+		echo "  -c ./variables/MAXDAEMONS -C \\\$MAXPERIP -o -b \\\$MAXDAEMONS \\"
+		echo " \\\$LOCALIP \\\$PORT /usr/bin/rsync -v --daemon --no-detach --log-file=/dev/fd/2\""
+		) > $servicedir/$service_name/run
+		chmod +x $servicedir/$service_name/run
+		touch $servicedir/$service_name/down
 	elif [ " $service_name" = " update" ] ; then
 		if [ -f /etc/debian_version ] ; then
 			system="debian"
@@ -390,8 +419,8 @@ add_service()
 		echo "  fi"
 		echo "\""
 	    ) > $servicedir/$service_name/run
+		chmod +x $servicedir/$service_name/run
 	fi
-	chmod +x $servicedir/$service_name/run
 }
 
 del_service()
@@ -426,7 +455,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.38 2021-06-06 11:04:16+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.39 2021-06-16 19:14:13+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -441,8 +470,8 @@ while test $# -gt 0; do
 	;;
 	--service_name=*)
 	service_name=$optarg
-	if [ " $service_name" != " fclient" -a " $service_name" != " fserver" -a " $service_name" != " update" ] ; then
-		echo "service_name should be fclient, fserver or update" 1>&2
+	if [ " $service_name" != " fclient" -a " $service_name" != " fserver" -a " $service_name" != " update" -a " $service_name" != " rsync" ] ; then
+		echo "service_name should be fclient, fserver, rsync or update" 1>&2
 	fi
 	;;
 	--host=*)
