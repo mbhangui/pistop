@@ -30,14 +30,26 @@ end
 
 begin
      prog = irexec
+     button = KEY_CHANNELUP
+     config = amixer -c 0 set Master 0.5dB+
+end
+
+begin
+     prog = irexec
+     button = KEY_CHANNELDOWN
+     config = amixer -c 0 set Master 0.5dB-
+end
+
+begin
+     prog = irexec
      button = KEY_VOLUMEUP
-     config = amixer -c 0 set Master 2dB+
+     config = mpc volume +5
 end
 
 begin
      prog = irexec
      button = KEY_VOLUMEDOWN
-     config = amixer -c 0 set Master 2dB-
+     config = mpc volume -5
 end
 
 begin
