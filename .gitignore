@@ -87,3 +87,5 @@ debian/postinst
 backup
 pistop-release
 PKGBUILD
+client
+server
