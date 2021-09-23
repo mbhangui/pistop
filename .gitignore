@@ -71,13 +71,11 @@ configure
 depcomp
 install-sh
 missing
-client
 create_service
 .deps
 config.h
 config.log
 config.status
-server
 stamp-h1
 debian/debian.tar.gz
 debian/pistop.dsc

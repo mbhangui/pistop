@@ -1,0 +1,13 @@
+[Unit]
+Description=Control mpd via lirc remote control
+After=lircd.service mpd.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/irexec
+Restart=always
+User=pi
+WorkingDirectory=~
+
+[Install]
+WantedBy=multi-user.target

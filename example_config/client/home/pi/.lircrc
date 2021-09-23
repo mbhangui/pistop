@@ -1,0 +1,125 @@
+begin
+     prog = irexec
+     button = KEY_NEXT
+     config = mpc next >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_PREVIOUS
+     config = mpc prev >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_PAUSE
+     config = mpc pause >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_STOP
+     config = mpc stop >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_PLAY
+     config = mpc toggle >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_VOLUMEUP
+     config = amixer -c 0 set Master 2dB+
+end
+
+begin
+     prog = irexec
+     button = KEY_VOLUMEDOWN
+     config = amixer -c 0 set Master 2dB-
+end
+
+begin
+     prog = irexec
+     button = KEY_MUTE
+     config = /home/pi/bin/mpc_mute >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_0
+     config = /home/pi/bin/rating 0 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_1
+     config = /home/pi/bin/rating 1 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_2
+     config = /home/pi/bin/rating 2 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_3
+     config = /home/pi/bin/rating 3 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_4
+     config = /home/pi/bin/rating 4 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_5
+     config = /home/pi/bin/rating 5 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_6
+     config = /home/pi/bin/rating 6 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_7
+     config = /home/pi/bin/rating 7 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_8
+     config = /home/pi/bin/rating 8 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_9
+     config = /home/pi/bin/rating 9 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_STAR
+     config = /home/pi/bin/rating 10 >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_NUMERIC_POUND
+     config = /home/pi/bin/rating rate >/dev/null
+end
+
+begin
+     prog = irexec
+     button = KEY_SLEEP
+     config = sudo shutdown -h now
+end

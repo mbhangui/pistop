@@ -1,0 +1,31 @@
+#!/bin/sh
+do_rating()
+{
+	uri="$1"
+	if [ -f /tmp/mpdev/.mpc_rating ] ; then
+		line=$(cat /tmp/mpdev/.mpc_rating)
+		echo line=$line 1>&2
+		set $line
+		rating=$1
+		#  /home/dietpi/bin/rating: 25: [: 8: unexpected operator
+		if [ -n "$rating" -a $rating -ge 0 -a $rating -le 10 ] ; then
+			mpc sticker "$uri" set rating $rating
+		fi
+	fi
+}
+
+if [ $# -ne 1 ] ; then
+	exit 1
+fi
+case $1 in
+	[0-9]|10) # numeric (0-9) key on remote
+	uri=$(mpc -f '%file%' current)
+	if [ -n "$uri" ] ; then
+		echo "$1 $uri "> /tmp/mpdev/.mpc_rating
+		do_rating "$uri"
+		/bin/rm -f /tmp/mpdev/.mpc_rating
+	fi
+	;;
+	rate) # pound (#) key on remote
+	;;
+esac

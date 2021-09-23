@@ -1,0 +1,16 @@
+#!/bin/sh
+if [ ! -d /tmp/mpdev ] ; then
+	mkdir -p /tmp/mpdev
+fi
+if [ -f /tmp/mpdev/.mpd_mute ] ; then
+	vol=$(cat /tmp/mpdev/.mpd_mute)
+	if [ -n "$vol" -a $vol -gt 0 -a $vol -le 100 ] ; then
+		mpc vol $vol
+	else
+		mpc vol 100
+	fi
+	/bin/rm -f /tmp/mpdev/.mpd_mute
+else
+	mpc vol|cut -d: -f2|cut -d% -f1 > /tmp/mpdev/.mpd_mute
+	mpc vol 0
+fi

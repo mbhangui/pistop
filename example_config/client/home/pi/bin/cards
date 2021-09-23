@@ -1,0 +1,19 @@
+#!/bin/sh
+cat /proc/asound/cards
+echo ==================================================
+echo
+for i in /proc/asound/card*
+do
+	if [ "$i" = "/proc/asound/cards" ] ; then
+		continue
+	fi
+	echo "Card `basename $i` [`cat $i/id`]"
+	for j in $i/pcm*p/sub*/hw_params
+	do
+		if [ -f $j ] ; then
+			echo $j
+			cat $j
+			echo ==================================================
+		fi
+	done
+done
