@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: client.in,v $
+# Revision 1.11  2021-09-24 11:40:13+05:30  Cprogrammer
+# added cmd line arg to umount
+#
 # Revision 1.10  2021-04-13 16:50:16+05:30  Cprogrammer
 # removed call to mpd_backup
 #
@@ -32,7 +35,7 @@
 # Initial revision
 #
 #
-# $Id: client.in,v 1.10 2021-04-13 16:50:16+05:30 Cprogrammer Exp mbhangui $
+# $Id: client.in,v 1.11 2021-09-24 11:40:13+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
@@ -55,6 +58,11 @@ do_umount()
             if [ $? -eq 0 -o $count -eq 60 ] ; then
                 break
             fi
+            drive_mounted=$(df -k |grep MDrive)
+            if [ -z "$drive_mounted" ] ; then
+              echo "MDrive is not mounted" 1>&2
+              break
+            fi
             count=`expr $count + 1`
             sleep 1
         done
@@ -65,7 +73,11 @@ trap suicide TERM INT
 
 if [ "$1" = "sleep" ] ; then
     sleep 20
+elif [ "$1" = "umount" ] ; then
+    do_umount
 else
+    mpd_up=0
+    autofs_up=0
     count=1
     mpd_was_down=0
     autofs_was_down=0
@@ -76,23 +88,25 @@ else
             autofs_was_down=1
             systemctl start autofs.service
         else
+            autofs_up=1
             if [ $autofs_was_down -eq 1 ] ; then
                 echo "started automount filesystems"
                 autofs_was_down=0
             fi
-            systemctl status mpd.service >/dev/null 2>&1
-            if [ $? -ne 0 ] ; then
-                # trigger autofs to mount MDrive
-                mpd_was_down=1
-                systemctl start mpd.service
-            else
-                if [ $mpd_was_down -eq 1 ] ; then
-                    echo "started music player daemon"
-                    mpd_was_down=0
-                fi
-                break
+        fi
+        systemctl status mpd.service >/dev/null 2>&1
+        if [ $? -ne 0 ] ; then
+            # trigger autofs to mount MDrive
+            mpd_was_down=1
+            systemctl start mpd.service
+        else
+            mpd_up=1
+            if [ $mpd_was_down -eq 1 ] ; then
+                echo "started music player daemon"
+                mpd_was_down=0
             fi
         fi
+        [ $mpd_up -eq 1 ] && [ $autofs_up -eq 1 ] && break
         if [ $count -eq 60 ] ; then
             echo "Giving up..."
             svc -dx /service/fclient
@@ -115,7 +129,7 @@ else
     else
         /bin/cat <&6 &
         CAT_PID=$!
-		# close file descriptor using <&- notation
+        # close file descriptor using <&- notation
         exec 6<&-
         wait $CAT_PID
         if [ $? -gt 128 ] ; then

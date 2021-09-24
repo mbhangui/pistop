@@ -61,3 +61,6 @@ Release 1.0 Start 28/08/2020
 39. create_service: skip updating UPGRADE, INTERVAL env variables
 - 16/06/2021
 40. create_service: added rsync service
+- 24/09/2021
+41. create_service: create shutdown script for fclient to unmount MDrive
+42. client.in: added command line option to umount MDrive

@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: create_service.in,v $
+# Revision 1.40  2021-09-24 11:40:29+05:30  Cprogrammer
+# create shutdown script to unmount MDrive
+#
 # Revision 1.39  2021-06-16 19:14:13+05:30  Cprogrammer
 # added rsync service
 #
@@ -120,7 +123,7 @@
 # Initial revision
 #
 #
-# $Id: create_service.in,v 1.39 2021-06-16 19:14:13+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.40 2021-09-24 11:40:29+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -262,6 +265,11 @@ add_service()
 		echo "fi"
 		) > $servicedir/$service_name/run
 		chmod +x $servicedir/$service_name/run
+		(
+		echo "#!/bin/sh"
+		echo "exec /usr/libexec/pistop/client umount"
+		) > $servicedir/$service_name/shutdown
+		chmod +x $servicedir/$service_name/shutdown
 		if [ ! -f $servicedir/$service_name/variables/POWER_OFF ] ; then
 			> $servicedir/$service_name/variables/POWER_OFF
 		fi
@@ -455,7 +463,7 @@ fi
 logdir=/var/log/svc
 servicedir=/service
 prog_args="$0 $*"
-RCSID="# \$Id: create_service.in,v 1.39 2021-06-16 19:14:13+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.40 2021-09-24 11:40:29+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
