@@ -1,5 +1,8 @@
 #!/bin/sh
 # $Log: backup.in,v $
+# Revision 1.5  2021-09-26 03:00:02+05:30  Cprogrammer
+# backup files/dir in its own dir
+#
 # Revision 1.4  2021-04-13 15:54:41+05:30  Cprogrammer
 # check for mkdir error
 #
@@ -13,7 +16,7 @@
 # Initial revision
 #
 #
-# $Id: backup.in,v 1.4 2021-04-13 15:54:41+05:30 Cprogrammer Exp mbhangui $
+# $Id: backup.in,v 1.5 2021-09-26 03:00:02+05:30 Cprogrammer Exp mbhangui $
 #
 HOST=$(uname -n)
 if [ -n "$BACKUP" -a -n "$DEST" ] ; then
@@ -27,7 +30,12 @@ if [ -n "$BACKUP" -a -n "$DEST" ] ; then
 	for i in $BACKUP
 	do
 		echo "backing up $i"
-		rsync -valptgomHE --delete $i $DEST/backup/$HOST
+		if [ -d $i ] ; then
+			rsync -valptgomHE --delete $i $DEST/backup/$HOST/$i
+		else
+			t=$(dirname $i)
+			rsync -valptgomHE --delete $i $DEST/backup/$HOST/$t
+		fi
 		ret=$?
 		if [ $ret -ne 0 ] ; then
 			status=1
