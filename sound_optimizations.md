@@ -3,6 +3,9 @@
 Based on [Linux Audio Adjustments](https://github.com/brianlight/Linux-Audio-Adjustments)
 
 - added in /boot/cmdline.txt: isolcpus=2,3
+  ```
+  console=tty1 root=PARTUUID=4dce75b8-02 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait quiet splash plymouth.ignore-serial-consoles isolcpus=2,3
+  ```
 - changed options in /lib/systemd/system/mpd.service
   ```
   CPUSchedulingPolicy=fifo
@@ -22,7 +25,7 @@ Based on [Linux Audio Adjustments](https://github.com/brianlight/Linux-Audio-Adj
   @audio - nice -20
   ```
 
-- Run sound.sh at boot
+- Run /home/pi/bin/optimize\_sound at boot
 
   ```
   #!/bin/sh
