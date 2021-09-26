@@ -12,8 +12,8 @@ Based on [Linux Audio Adjustments](https://github.com/brianlight/Linux-Audio-Adj
   ```
 - /etc/sysctl.conf
   ```
-  net.core.rmem\_max = 16777216
-  net.core.wmem\_max = 16777216
+  net.core.rmem_max = 16777216
+  net.core.wmem_max = 16777216
   ```
 - /etc/security/limits.conf
   ```
