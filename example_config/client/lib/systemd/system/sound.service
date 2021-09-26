@@ -1,0 +1,8 @@
+[Unit]
+Description=Sound
+
+[Service]
+ExecStart=/home/pi/bin/optimize_sound
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+#!/bin/sh
+while true
+do
+	if [ -f /run/mpd/mpd.pid ] ; then
+		chrt -p 99 $(cat /run/mpd/mpd.pid)
+		break
+	fi
+	sleep 1
+done
