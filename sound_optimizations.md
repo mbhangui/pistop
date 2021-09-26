@@ -4,17 +4,23 @@ Based on [Linux Audio Adjustments](https://github.com/brianlight/Linux-Audio-Adj
 
 - added in /boot/cmdline.txt: isolcpus=2,3
 - changed options in /lib/systemd/system/mpd.service
+  ```
   CPUSchedulingPolicy=fifo
   CPUSchedulingPriority=70
   Nice=-15
   ExecStart=/usr/bin/taskset -c 2,3 /usr/local/bin/mpd --no-daemon $MPDCONF
+  ```
 - /etc/sysctl.conf
+  ```
   net.core.rmem\_max = 16777216
   net.core.wmem\_max = 16777216
+  ```
 - /etc/security/limits.conf
+  ```
   audio - rtprio 99
   @audio - memlock 512000
   @audio - nice -20
+  ```
 
 - Run sound.sh at boot
 
