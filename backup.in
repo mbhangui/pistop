@@ -1,5 +1,8 @@
 #!/bin/sh
 # $Log: backup.in,v $
+# Revision 1.6  2021-09-26 22:09:20+05:30  Cprogrammer
+# create non-existent directories
+#
 # Revision 1.5  2021-09-26 03:00:02+05:30  Cprogrammer
 # backup files/dir in its own dir
 #
@@ -16,7 +19,7 @@
 # Initial revision
 #
 #
-# $Id: backup.in,v 1.5 2021-09-26 03:00:02+05:30 Cprogrammer Exp mbhangui $
+# $Id: backup.in,v 1.6 2021-09-26 22:09:20+05:30 Cprogrammer Exp mbhangui $
 #
 HOST=$(uname -n)
 if [ -n "$BACKUP" -a -n "$DEST" ] ; then
@@ -31,9 +34,15 @@ if [ -n "$BACKUP" -a -n "$DEST" ] ; then
 	do
 		echo "backing up $i"
 		if [ -d $i ] ; then
+			if [ ! -d $DEST/backup/$HOST/$i ] ; then
+				mkdir -p $DEST/backup/$HOST/$i
+			fi
 			rsync -valptgomHE --delete $i $DEST/backup/$HOST/$i
 		else
 			t=$(dirname $i)
+			if [ ! -d $DEST/backup/$HOST/$t ] ; then
+				mkdir -p $DEST/backup/$HOST/$t
+			fi
 			rsync -valptgomHE --delete $i $DEST/backup/$HOST/$t
 		fi
 		ret=$?
