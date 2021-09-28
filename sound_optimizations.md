@@ -63,3 +63,26 @@ Based on [Linux Audio Adjustments](https://github.com/brianlight/Linux-Audio-Adj
   [Install]
   WantedBy=multi-user.target
   ```
+
+- Reording ALSA devices by creating /etc/modprobe.d/alsa-base.conf
+
+  Refer to this [Document](https://gist.github.com/rnagarajanmca/63badce0fe0e2ad126041c7c139970ea)
+
+  Let us say you have two cards (snd\_soc\_allo\_piano\_dac\_plus on I2C an another DAC on usb) and we want the I2C audio card to appear first followed by the USB DAC.
+
+  ```
+  cat /proc/asound/modules
+  0 vc4
+  1 vc4
+  2 snd_usb_audio
+  3 snd_soc_allo_piano_dac_plus
+  ```
+
+  Now you need to create /etc/modprobe.d/alsa-base.conf like this
+
+  ```
+  options snd_soc_allo_piano_dac_plus index=0
+  options snd_usb_audio index=1
+  options vc4 index=2
+  options snd slots=snd_soc_allo_piano_dac_plus,snd_usb_audio,vc4
+  ```

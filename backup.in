@@ -1,5 +1,8 @@
 #!/bin/sh
 # $Log: backup.in,v $
+# Revision 1.7  2021-09-28 14:09:56+05:30  Cprogrammer
+# backup only when dest/backup dir exists
+#
 # Revision 1.6  2021-09-26 22:09:20+05:30  Cprogrammer
 # create non-existent directories
 #
@@ -19,9 +22,13 @@
 # Initial revision
 #
 #
-# $Id: backup.in,v 1.6 2021-09-26 22:09:20+05:30 Cprogrammer Exp mbhangui $
+# $Id: backup.in,v 1.7 2021-09-28 14:09:56+05:30 Cprogrammer Exp mbhangui $
 #
 HOST=$(uname -n)
+if [ ! -d $DEST/backup ] ; then
+	echo "$DEST/backup doesn't exist" 1>&2
+	exit 1
+fi
 if [ -n "$BACKUP" -a -n "$DEST" ] ; then
 	if [ ! -d $DEST/backup/$HOST ] ; then
 		mkdir -p $DEST/backup/$HOST
@@ -34,10 +41,7 @@ if [ -n "$BACKUP" -a -n "$DEST" ] ; then
 	do
 		echo "backing up $i"
 		if [ -d $i ] ; then
-			if [ ! -d $DEST/backup/$HOST/$i ] ; then
-				mkdir -p $DEST/backup/$HOST/$i
-			fi
-			rsync -valptgomHE --delete $i $DEST/backup/$HOST/$i
+			rsync -valptgomHE --delete $i $DEST/backup/$HOST
 		else
 			t=$(dirname $i)
 			if [ ! -d $DEST/backup/$HOST/$t ] ; then

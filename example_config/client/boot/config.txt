@@ -24,24 +24,20 @@ disable_overscan=1
 # uncomment if hdmi display is not detected and composite is being output
 #hdmi_force_hotplug=1
 
-# HDMI Group
-# Defines the HDMI type, not specifying the group, or setting to 0 will use the
-# preferred group reported by the EDID.
-hdmi_group=0   #Automatic based on EDID
-#hdmi_group=1   #Set to CEA
-#hdmi_group=2   #Set to DMT
-
 # uncomment to force a specific HDMI mode (this will force VGA)
-hdmi_mode=16
+#hdmi_group=1
+#hdmi_mode=1
 
 # uncomment to force a HDMI mode rather than DVI. This can make audio work in
 # DMT (computer monitor) modes
-hdmi_drive=1
 #hdmi_drive=2
 
 # uncomment to increase signal to HDMI, if you have interference, blanking, or
 # no display
 #config_hdmi_boost=4
+
+# Disable turning TV on on boot and keep CEC adapter active.
+hdmi_ignore_cec_init=1
 
 # uncomment for composite PAL
 #sdtv_mode=2
@@ -57,6 +53,8 @@ dtparam=i2c_arm=on
 # Uncomment this to enable infrared communication.
 #dtoverlay=gpio-ir,gpio_pin=17
 #dtoverlay=gpio-ir-tx,gpio_pin=18
+
+# Kali+Piano 2.1 DAC
 dtoverlay=allo-piano-dac-plus-pcm512x-audio,glb_mclk
 
 # Additional overlays and parameters are documented /boot/overlays/README
@@ -64,8 +62,7 @@ dtoverlay=allo-piano-dac-plus-pcm512x-audio,glb_mclk
 # Enable audio (loads snd_bcm2835)
 dtparam=audio=off
 
-
 # Enable DRM VC4 V3D drive
-dtoverlay=vc4-kms-v3d,audio=off
+dtoverlay=vc4-kms-v3d
 max_framebuffers=2
 arm_64bit=1
