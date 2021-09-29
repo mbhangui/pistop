@@ -1,13 +1,7 @@
 #!/bin/sh
 # $Log: backup.in,v $
-# Revision 1.7  2021-09-28 14:09:56+05:30  Cprogrammer
-# backup only when dest/backup dir exists
-#
-# Revision 1.6  2021-09-26 22:09:20+05:30  Cprogrammer
-# create non-existent directories
-#
-# Revision 1.5  2021-09-26 03:00:02+05:30  Cprogrammer
-# backup files/dir in its own dir
+# Revision 1.5  2021-09-29 19:38:02+05:30  Cprogrammer
+# reverted backup script to v1.4
 #
 # Revision 1.4  2021-04-13 15:54:41+05:30  Cprogrammer
 # check for mkdir error
@@ -22,7 +16,7 @@
 # Initial revision
 #
 #
-# $Id: backup.in,v 1.7 2021-09-28 14:09:56+05:30 Cprogrammer Exp mbhangui $
+# $Id: backup.in,v 1.5 2021-09-29 19:38:02+05:30 Cprogrammer Exp mbhangui $
 #
 HOST=$(uname -n)
 if [ ! -d $DEST/backup ] ; then
@@ -36,24 +30,6 @@ if [ -n "$BACKUP" -a -n "$DEST" ] ; then
 			exit 1
 		fi
 	fi
-	status=0
-	for i in $BACKUP
-	do
-		echo "backing up $i"
-		if [ -d $i ] ; then
-			rsync -valptgomHE --delete $i $DEST/backup/$HOST
-		else
-			t=$(dirname $i)
-			if [ ! -d $DEST/backup/$HOST/$t ] ; then
-				mkdir -p $DEST/backup/$HOST/$t
-			fi
-			rsync -valptgomHE --delete $i $DEST/backup/$HOST/$t
-		fi
-		ret=$?
-		if [ $ret -ne 0 ] ; then
-			status=1
-		fi
-	done
-	exit $status
+	exec rsync -valptgomHE --delete $BACKUP $DEST/backup/$HOST
 fi
 exit 0
