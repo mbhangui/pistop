@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: client.in,v $
+# Revision 1.13  2021-10-12 18:07:58+05:30  Cprogrammer
+# mount MDrive
+#
 # Revision 1.12  2021-09-29 19:38:31+05:30  Cprogrammer
 # removed hardcoded MPD host name
 #
@@ -38,7 +41,7 @@
 # Initial revision
 #
 #
-# $Id: client.in,v 1.12 2021-09-29 19:38:31+05:30 Cprogrammer Exp mbhangui $
+# $Id: client.in,v 1.13 2021-10-12 18:07:58+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
@@ -89,7 +92,10 @@ else
         systemctl status autofs.service >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             autofs_was_down=1
+            echo "starting automount filesystems"
             systemctl start autofs.service
+            sleep 1
+            continue
         else
             autofs_up=1
             if [ $autofs_was_down -eq 1 ] ; then
@@ -97,10 +103,17 @@ else
                 autofs_was_down=0
             fi
         fi
+        if [ ! -f /var/lib/mpd/MDrive/data/stats.db ] ; then
+            echo "MDrive not yet mounted"
+            sleep 1
+            continue
+        fi
+        echo "MDrive mounted"
         systemctl status mpd.service >/dev/null 2>&1
         if [ $? -ne 0 ] ; then
             # trigger autofs to mount MDrive
             mpd_was_down=1
+            echo "starting music player daemon"
             systemctl start mpd.service
         else
             mpd_up=1
