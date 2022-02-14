@@ -72,3 +72,5 @@ Release 1.0 Start 28/08/2020
 45. reverted backup script to v1.4
 - 12/10/2021
 46. client.in: mount MDrive
+- 14/02/2022
+47. create_services.in: make fclient service silent
