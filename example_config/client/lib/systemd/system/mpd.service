@@ -1,27 +1,19 @@
 [Unit]
 Description=Music Player Daemon
 Documentation=man:mpd(1) man:mpd.conf(5)
+Documentation=file:///usr/share/doc/mpd/html/user.html
+After=network.target sound.target
 
 [Service]
 Type=notify
-#ExecStart=/usr/bin/taskset -c 2,3 /usr/bin/mpd --no-daemon
-ExecStart=/usr/bin/mpd --no-daemon
-ExecStartPost=/usr/bin/svc -u /service/mpdev /service/fserver
-ExecStop=/usr/bin/svc -d /service/mpdev /service/fserver
+EnvironmentFile=/etc/default/mpd
+#ExecStart=/usr/bin/chrt 99 /usr/bin/mpd --no-daemon $MPDCONF
+ExecStart=/usr/bin/taskset -c 2,3 /usr/bin/mpd --no-daemon $MPDCONF
 
 # Enable this setting to ask systemd to watch over MPD, see
 # systemd.service(5).  This is disabled by default because it causes
 # periodic wakeups which are unnecessary if MPD is not playing.
 #WatchdogSec=120
-
-#CPUSchedulingPolicy=other
-CPUSchedulingPolicy=fifo
-
-# CPUSchedulingPriority=43
-CPUSchedulingPriority=70
-
-#Nice=-10
-Nice=-15
 
 # allow MPD to use real-time priority 40
 LimitRTPRIO=40
@@ -34,6 +26,7 @@ LimitMEMLOCK=64M
 ProtectSystem=yes
 
 # more paranoid security settings
+NoNewPrivileges=yes
 ProtectKernelTunables=yes
 ProtectControlGroups=yes
 ProtectKernelModules=yes

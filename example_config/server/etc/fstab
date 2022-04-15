@@ -1,4 +1,4 @@
 #
 # Your UUID will be different
 # use blkid to find the UUID of your drive
-UUID=20bcc800-9dce-4734-947d-6d760b36a4de /home/pi/MDrive ext4  defaults,noatime,noauto,x-systemd.automount       0 2
+UUID=20bcc800-9dce-4734-947d-6d760b36a4de /MDrive ext4  defaults,noatime,noauto,x-systemd.automount       0 2

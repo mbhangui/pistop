@@ -6,6 +6,7 @@ Documentation=file:///usr/share/doc/mpd/user-manual.html
 [Service]
 Type=notify
 EnvironmentFile=/etc/default/mpd
+#ExecStart=/usr/bin/taskset -c 2,3 /usr/bin/mpd --no-daemon $MPDCONF
 ExecStart=/usr/bin/chrt 99 /usr/bin/mpd --no-daemon $MPDCONF
 SupplementaryGroups=audio
 
