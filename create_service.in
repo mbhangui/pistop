@@ -266,7 +266,6 @@ add_service()
 		echo "  if [ \$? -eq 0 ] ; then"
 		echo "    echo \"connected to \$HOST:\$PORT\""
 		echo "    exec /usr/bin/envdir variables sh -c \"\\"
-		echo "      @prefix@/libexec/pistop/backup; sleep 1; \\"
 		echo "      exec /usr/bin/tcpclient -v -D -H -R -t \\"
 		echo "      \\\$TIMEOUT \\\$HOST \\\$PORT @prefix@/libexec/pistop/client start 2>&1\""
 		echo "  else"
