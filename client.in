@@ -1,8 +1,8 @@
 #!/bin/sh
 #
 # $Log: client.in,v $
-# Revision 1.13  2021-10-12 18:07:58+05:30  Cprogrammer
-# mount MDrive
+# Revision 1.13  2022-04-30 11:11:04+05:30  Cprogrammer
+# unmount MDrive
 #
 # Revision 1.12  2021-09-29 19:38:31+05:30  Cprogrammer
 # removed hardcoded MPD host name
@@ -41,7 +41,7 @@
 # Initial revision
 #
 #
-# $Id: client.in,v 1.13 2021-10-12 18:07:58+05:30 Cprogrammer Exp mbhangui $
+# $Id: client.in,v 1.13 2022-04-30 11:11:04+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
@@ -55,17 +55,18 @@ suicide()
 
 do_umount()
 {
-    count=1
-    for i in mpd.service autofs.service
+    while true
     do
-        echo "Stopping $i"
-        systemctl stop $i
-    if [ $? -ne 0 ] ; then
-        continue
-    fi
+        echo "Stopping mpd.service"
+        systemctl stop mpd.service 
+        if [ $? -eq 0 ] ; then
+            break
+        fi
     done
     # MDrive on RPI has the directory sounds
     if [ -d /var/lib/mpd/MDrive/sounds ] ; then
+        echo "Unmounting MDrive"
+        count=1
         while true
         do
             umount /var/lib/mpd/MDrive
@@ -74,15 +75,20 @@ do_umount()
             fi
             drive_mounted=$(df -k |grep MDrive)
             if [ -z "$drive_mounted" ] ; then
-              echo "MDrive is not mounted" 1>&2
               break
             fi
             count=`expr $count + 1`
             sleep 1
         done
-	else
-		echo "MDrive is not mounted"
     fi
+    while true
+    do
+        echo "Stopping autofs.service"
+        systemctl stop autofs.service 
+        if [ $? -eq 0 ] ; then
+            break
+        fi
+    done
 }
 
 trap suicide TERM INT
