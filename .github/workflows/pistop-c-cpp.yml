@@ -12,6 +12,7 @@ on:
       - '!**.md'
       - '!**/pistop-obs.yml'
       - '!example_config/*'
+  workflow_dispatch:
 
 jobs:
   build:
