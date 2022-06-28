@@ -26,6 +26,18 @@ AC_CHECK_HEADERS([stdlib.h errno.h sys/select.h sys/types.h sys/mount.h unistd.h
 # Checks for library functions.
 AC_CHECK_FUNCS([select])
 
+servicedir="/service"
+AC_ARG_ENABLE(servicedir, [  --enable-servicedir=dir         directory where supervise services are installed.],
+	servicedir="$enableval",
+	[
+		if test "$servicedir" = ""
+		then
+			AC_MSG_ERROR([Unable to find your servicedir directory, specify --enable-servicedir.])
+		fi
+	])
+AC_DEFINE_UNQUOTED(SERVICEDIR,"$servicedir",supervise service directory)
+AC_SUBST(servicedir)
+
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pistop-release:pistop-release.in],[], [])
 AC_OUTPUT

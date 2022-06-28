@@ -5,8 +5,26 @@ fi
 if [ ! -f conf-release ] ; then
 	echo 1.1 > conf-release
 fi
-prefix=/usr
+SYSTEM=$(uname -s)
+case "$SYSTEM" in
+  Linux)
+  prefix=/usr
+  sysconfdir=/etc
+  servicedir=/service
+  ;;
+  FreeBSD)
+  prefix=/usr/local
+  sysconfdir=/usr/local/etc
+  servicedir=/usr/local/etc/indimail/sv
+  ;;
+  Darwin)
+  prefix=/usr/local
+  sysconfdir=/opt/local/etc
+  servicedir=/usr/local/etc/indimail/sv
+esac
+
 ./configure \
   --prefix=$prefix \
-  --sysconfdir=/etc/pistop \
-  --libexecdir=$prefix/libexec/pistop
+  --sysconfdir=$sysconfdir \
+  --libexecdir=$prefix/libexec \
+  --enable-servicedir=$servicedir

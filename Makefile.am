@@ -9,13 +9,14 @@ install_sh_SCRIPT = $(install_sh) -c
 
 DEFS=@DEFS@ -fno-strict-aliasing -I/usr/include/qmail
 
-bindir=@prefix@/bin
+pistopbindir=@prefix@/bin
+pistoplibexecdir=@libexecdir@/pistop
+pistopsysconfdir=@sysconfdir@/pistop
 
-libexec_PROGRAMS = server$(EXEEXT)
-libexec_SCRIPTS = create_service client backup
+pistoplibexec_PROGRAMS = server$(EXEEXT)
+pistoplibexec_SCRIPTS = create_service client backup
 noinst_DATA = pistop.spec PKGBUILD
-SYSCONFDIR=@sysconfdir@
-sysconf_DATA=pistop-release
+pistopsysconf_DATA=pistop-release
 doc_DATA=README.md COPYING pistop.changes
 
 server_SOURCES = server.c
@@ -31,6 +32,7 @@ edit = sed \
 	-e 's|@email\@|'"`cat conf-email`"'|g' \
 	-e 's}@pkgconfigdir\@}$(pkgconfigdir)}g' \
 	-e 's}@VERSION\@}$(VERSION)}g' \
+	-e 's}@servicedir\@}$(servicedir)}g' \
 	-e 's}@sysconfdir\@}$(sysconfdir)}g' \
 	-e 's}@prefix\@}$(prefix)}g'
 
