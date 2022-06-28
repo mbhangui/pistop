@@ -1,6 +1,9 @@
 #!/bin/sh
 #
 # $Log: client.in,v $
+# Revision 1.15  2022-06-28 19:32:22+05:30  Cprogrammer
+# display MDrive mounted once
+#
 # Revision 1.14  2022-06-28 14:01:32+05:30  Cprogrammer
 # updated for mac
 #
@@ -44,7 +47,7 @@
 # Initial revision
 #
 #
-# $Id: client.in,v 1.14 2022-06-28 14:01:32+05:30 Cprogrammer Exp mbhangui $
+# $Id: client.in,v 1.15 2022-06-28 19:32:22+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
@@ -115,6 +118,7 @@ else
     count=1
     mpd_was_down=0
     autofs_was_down=0
+	mdrive_mounted=0
     while true
     do
 		# 1. we assume we are running on Linux mostly
@@ -140,7 +144,10 @@ else
             sleep 1
             continue
         fi
-        echo "MDrive mounted"
+		if [ $mdrive_mounted -eq 0 ] ; then
+			mdrive_mounted=1
+        	echo "MDrive mounted"
+		fi
 		if [ -x /usr/bin/systemctl ] ; then
         	systemctl status mpd.service >/dev/null 2>&1
         	if [ $? -ne 0 ] ; then
@@ -186,7 +193,7 @@ else
         /var/lib/mpd/MDrive/bin/boot_sound >/dev/null 2>&1
     fi
     if [ -d /var/lib/mpd/MDrive/backup ] ; then
-        @prefix@/libexec/pistop/backup
+        @libexecdir@/pistop/backup
     fi
     echo "Waiting for poweroff"
     echo wait 1>&7
