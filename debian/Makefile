@@ -1,6 +1,6 @@
 prefix=/usr
-libexecdir=/usr/libexec/pistop
-sysconfdir=/etc/pistop
+libexecdir=/usr/libexec
+sysconfdir=/etc
 logdir=/var/log/svc
 servicedir=/service
 version=$(shell cat ../conf-version)

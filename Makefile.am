@@ -34,6 +34,7 @@ edit = sed \
 	-e 's}@VERSION\@}$(VERSION)}g' \
 	-e 's}@servicedir\@}$(servicedir)}g' \
 	-e 's}@sysconfdir\@}$(sysconfdir)}g' \
+	-e 's}@libexecdir\@}$(libexecdir)}g' \
 	-e 's}@prefix\@}$(prefix)}g'
 
 create_service: create_service.in
