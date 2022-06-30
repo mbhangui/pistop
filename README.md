@@ -188,11 +188,11 @@ Use the below url for installation
 https://software.opensuse.org//download.html?project=home%3Ambhangui%3Adietpi&package=pistop
 
 
-## NOTE for binary builds on debian
+## IMPORTANT NOTE for binary builds on debian
 
-debian/ubuntu repositories already has daemontools and ucspi-tcp which are far behind in terms of feature list that the indimail-mta repo provides. When you install indimail-mta, apt-get may pull the wrong version with limited features. Also `apt-get install indimail` or `apt-get install indimail-mta` will get installed with errors, leading to an incomplete setup. You need to ensure that the two packages get installed from the indimail-mta repository instead of the debian repository.
+debian/ubuntu repositories already has daemontools and ucspi-tcp which are far behind in terms of feature list that the indimail-mta repo provides. When you install pistop, apt-get may pull the wrong version with limited features. Also `apt-get install mpdev` will get installed with errors, leading to an incomplete setup. You need to ensure that the two packages get installed from the indimail-mta repository instead of the debian repository. If you don't do this, pistop will not function correctly as it depends on setting of proper global envirnoment variables. Global environment variabels are not supported by daemontools from the official debian repository. Additionally, the official ucspi-tcp package from the debian repository doesn't support TLS, which will result in services that depend on TLS not functioning.
 
-All you need to do is set a higher preference for the indimail-mta repository by creating /etc/apt/preferences.d/preferences with the following conents
+All you need to do is set a higher preference for the indimail-mta repository by creating /etc/apt/preferences.d/preferences with the following contents
 
 ```
 $ sudo /bin/bash
