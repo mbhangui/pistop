@@ -162,7 +162,7 @@ NOTE: You only need to add the line having `UUID=` in your /etc/fstab. Your UUID
 You can have your SBC automatically updated. You can have list of packages that the service will automatically update by creating the environment variable UPGRADE. The default value for this environment variable is `ucspi-tcp mpdev libqmail indimail-mini daemontools pistop mpd`. You can edit the file /service/update/variables/UPGRADE to update the environment variable.
 
 ```
-$ sudo /usr/libexec/pistop/create_service --service_name=update --add-service
+$ sudo /usr/libexec/pistop/create_service --service_name=update --user=pi --add-service
 ```
 
 **RSYNC Service**
