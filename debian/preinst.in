@@ -32,7 +32,7 @@ case "$1" in
 		if [ ! -d /service/$i ] ; then
 			continue
 		fi
-		${prefix}/bin/svstat /service/$i
+		${prefix}/bin/svstat /service/$i >/dev/null 2>&1
 		if [ $? -eq 0 ] ; then
 			mkdir -p ${rundir}/$i
 			${prefix}/bin/svc -d /service/$i
