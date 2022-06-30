@@ -87,5 +87,9 @@ debian/postinst
 backup
 pistop-release
 PKGBUILD
-client
-server
+pistopclient
+pistopserver
+pistopstart
+config.h.in
+client.in
+pistopserver.1

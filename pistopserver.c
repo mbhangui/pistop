@@ -67,6 +67,7 @@ out(char *str)
 void
 sigterm()
 {
+	substdio_put(subfdout, "shutdown\n", 9);
 	substdio_flush(subfdout);
 	substdio_flush(subfderr);
 	_exit(1);
@@ -149,7 +150,8 @@ main(int argc, char **argv)
 			out("length = ");
 			out(strnum);
 			out("\n");
-			substdio_flush(subfdout);
+			if (substdio_flush(subfdout) == -1)
+				strerr_die2sys(111, FATAL, "write: ");
 #endif
 			if (!str_diffn(buffer, "shutdown", 8)) {
 				execl("/sbin/shutdown", "-h", "now", (char *) 0);

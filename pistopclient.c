@@ -1,6 +1,9 @@
 /*
  * $Log: $
  */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
@@ -9,6 +12,7 @@
 #include <subfd.h>
 #include <scan.h>
 #include <stralloc.h>
+#include <wait.h>
 #include <strerr.h>
 #include <error.h>
 #include <env.h>
@@ -148,6 +152,35 @@ timeoutwrite(t, fd, buf, len)
 	return -1;
 }
 
+void
+do_start(char *pistopstart)
+{
+	pid_t           child;
+	int             wstat;
+
+	switch((child = fork()))
+	{
+	case -1:
+		strerr_die2sys(111, FATAL, "fork: ");
+	case 0:
+		execl(pistopstart, "pistopstart", "start", (char *) 0);
+		strerr_die4sys(111, FATAL, "execl: ", pistopstart, " start: ");
+	default:
+		break;
+	}
+	if (wait_pid(&wstat, child) == -1)
+		strerr_die2sys(111, FATAL, "wait: ");
+	if (wait_crashed(wstat))
+		strerr_die2sys(111, FATAL, "wait: ");
+	switch (wait_exitcode(wstat))
+	{
+	case 0:
+		return;
+	default:
+		strerr_die2x(0, FATAL, "client startup failed");
+	}
+}
+
 int
 main(int argc, char **argv)
 {
@@ -156,7 +189,7 @@ main(int argc, char **argv)
 	struct timeval *tptr;
 	time_t          last_timeout;
 	char            buffer[256];
-	char           *ptr;
+	char           *ptr, *pistopstart;
 	fd_set          rfds; /*- File descriptor mask for select -*/
 
 	sig_termcatch(sigterm);
@@ -167,6 +200,22 @@ main(int argc, char **argv)
 			break;
 		}
 	}
+	if (!(ptr = env_get("HOME"))) {
+		errf("HOME not set\n");
+		_exit(100);
+	}
+	if (chdir(ptr) == -1 || chdir(".pistop")== -1 )
+		strerr_die4sys(111, FATAL, "chdir: ", ptr, "/.pistopstart: ");
+	if (!access("pistopstart", X_OK))
+		pistopstart = "./pistopstart";
+	else
+	if (!access(LIBEXECDIR"/pistop/pistopstart", X_OK))
+		pistopstart = LIBEXECDIR"/pistop/pistopstart";
+	else {
+		errf("pistopstart not found\n");
+		_exit(100);
+	}
+	do_start(pistopstart);
 	if (dataTimeout == -1) {
 		if (!(ptr = env_get("DATA_TIMEOUT")))
 			ptr = "1800";
@@ -212,18 +261,26 @@ main(int argc, char **argv)
 		if (FD_ISSET(6, &rfds)) { /*- data from socket/stdin and display it */
 			if ((length = read(6, buffer, sizeof(buffer))) == -1)
 				strerr_die2sys(111, FATAL, "read-network: ");
-			if (!length) {
-				out("PI4 powerd off\n");
+			if (!length) { /*- server died or network disconnect */
+				out("remote powered off\n");
 				flush();
-				/*
-				execl("/sbin/shutdown", "-h", "now", (char *) 0);
-				strerr_die2sys(111, FATAL, "execl: /sbin/shutdown -r now: ");
-				*/
+				close(6);
+				execl(pistopstart, "pistopstart", "stop", (char *) 0);
+				strerr_die4sys(111, FATAL, "execl: ", pistopstart, " stop: ");
+				_exit(0);
 			} 
-			if (substdio_put(subfderr, buffer, length) == -1)
+			if (substdio_put(subfderr, "[", 1) == -1 ||
+					substdio_put(subfderr, buffer, length) == -1 ||
+					substdio_put(subfderr, "]", 1) == -1 || substdio_flush(subfderr))
 				die_write();
-			if (substdio_flush(subfderr) == -1)
-				die_write();
+			if (!str_diffn(buffer, "shutdown\n", 9)) {
+				out("remote powered off\n");
+				flush();
+				execl(pistopstart, "pistopstart", "stop", (char *) 0);
+				strerr_die4sys(111, FATAL, "execl: ", pistopstart, " stop: ");
+				close(6);
+				_exit(0);
+			}
 		}
 	} /*- for (;;) { */
 	_exit(0);

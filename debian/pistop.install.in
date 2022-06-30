@@ -1,2 +1,3 @@
 usr/libexec/pistop  @prefix@/libexec
 etc/pistop          /etc
+usr/share/man/man1  @mandir@

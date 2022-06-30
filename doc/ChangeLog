@@ -1,5 +1,5 @@
 *
-Release 1.0 Start 28/08/2020
+Release 1.0 Start 28/08/2020 End 30/06/2022
 - 28/08/2020
 01. Initial Release
 02. fixed syntax error in create_service
@@ -76,3 +76,6 @@ Release 1.0 Start 28/08/2020
 47. create_services.in: make fclient service silent
 - 28/06/2022
 48. client.in: Display MDrive mounted once
+- 30/06/2022
+49. added pistopclient, pistopserver man pages
+50. Version 2.0: added pistopclient, pistopserver, pistopstart

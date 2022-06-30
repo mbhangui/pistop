@@ -1,0 +1,187 @@
+#!/bin/sh
+#
+# $Id: $
+#
+
+suicide()
+{
+	if [ -n "$CAT_PID" ] ; then
+		kill $CAT_PID 2>/dev/null
+	fi
+	echo "ARGH!!! Committing suicide. Going down on SIGTERM"
+	exit 1
+}
+
+get_mpd_conf_value()
+{
+    grep "^$1" @sysconfdir@/mpd.conf|awk '{print $2}' | \
+    sed -e 's{"{{g'
+}
+
+stop()
+{
+	while true
+	do
+		echo "Stopping mpd.service"
+		if [ -x /usr/bin/systemctl ] ; then
+			systemctl stop mpd.service mpd.socket
+		elif [ -d $servicedir/mpd ] ; then
+			svc -d $servicedir/mpd
+		else
+			break
+		fi
+		if [ $? -eq 0 ] ; then
+			echo "stopped mpd"
+			break
+		fi
+	done
+	# MDrive on RPI has the directory sounds
+	if [ -d $MDRIVE/sounds ] ; then
+		echo "Unmounting MDrive"
+		count=1
+		while true
+		do
+			umount $MDRIVE >/dev/null 2>&1
+			if [ $? -eq 0 -o $count -eq 60 ] ; then
+				break
+			fi
+			drive_mounted=$(df -k |grep MDrive)
+			if [ -z "$drive_mounted" ] ; then
+				echo "unmounted MDrive"
+				break
+			fi
+			count=`expr $count + 1`
+			sleep 1
+		done
+	fi
+	if [ -x /usr/bin/systemctl ] ; then
+		while true
+		do
+			echo "Stopping autofs.service"
+			systemctl stop autofs.service
+			if [ $? -eq 0 ] ; then
+				echo "stopped autofs"
+				break
+			fi
+		done
+	elif [ -x /bin/launchctl ] ; then
+		while true
+		do
+			echo "Stopping automountd"
+			launchctl stop automountd 
+			if [ $? -eq 0 ] ; then
+				break
+			fi
+		done
+	fi
+}
+
+start()
+{
+	mpd_up=0
+	autofs_up=0
+	count=1
+	mpd_was_down=0
+	autofs_was_down=0
+	mdrive_mounted=0
+	while true
+	do
+		# 1. we assume we are running on Linux mostly
+		# 2. If on mac/freebsd, we assume autofs has been setup
+		if [ -x /usr/bin/systemctl ] ; then
+			systemctl status autofs.service >/dev/null 2>&1
+			if [ $? -ne 0 ] ; then
+				autofs_was_down=1
+				echo "starting automount filesystems"
+				systemctl start autofs.service
+				sleep 1
+				continue
+			else
+				autofs_up=1
+				if [ $autofs_was_down -eq 1 ] ; then
+					echo "started automount filesystems"
+					autofs_was_down=0
+				fi
+			fi
+		fi
+		if [ ! -f $MDRIVE/data/stats.db ] ; then
+			echo "MDrive not yet mounted"
+			sleep 1
+			continue
+		fi
+		if [ $mdrive_mounted -eq 0 ] ; then
+			mdrive_mounted=1
+			echo "MDrive mounted"
+		fi
+		if [ -x /usr/bin/systemctl ] ; then
+			systemctl status mpd.service >/dev/null 2>&1
+			if [ $? -ne 0 ] ; then
+				# trigger autofs to mount MDrive
+				mpd_was_down=1
+				echo "starting music player daemon"
+				systemctl start mpd.service
+			else
+				mpd_up=1
+				if [ $mpd_was_down -eq 1 ] ; then
+					echo "started music player daemon"
+					mpd_was_down=0
+				fi
+			fi
+			[ $mpd_up -eq 1 ] && [ $autofs_up -eq 1 ] && break
+		else
+			svstat $servicedir/mpd >/dev/null 2>&1
+			if [ $? -ne 0 ] ; then
+				# trigger autofs to mount MDrive
+				mpd_was_down=1
+				echo "starting music player daemon"
+				svc -u $servicedir/mpd
+			else
+				mpd_up=1
+				if [ $mpd_was_down -eq 1 ] ; then
+					echo "started music player daemon"
+					mpd_was_down=0
+				fi
+			fi
+			[ $mpd_up -eq 1 ] && break
+		fi
+		if [ $count -eq 60 ] ; then
+			echo "Giving up..."
+			svc -dx /service/fclient
+			systemctl stop autofs
+			umount $MDRIVE
+			break
+		fi
+		sleep 20
+		count=`expr $count + 1`
+	done
+	if [ -x $MDRIVE/bin/boot_sound ] ; then
+		$MDRIVE/bin/boot_sound >/dev/null 2>&1
+	fi
+	if [ -d $MDRIVE/backup ] ; then
+		@pistoplibexecdir@/backup
+	fi
+	echo "Waiting for poweroff"
+}
+
+trap suicide TERM INT
+servicedir=@servicedir@
+music_dir=$(get_mpd_conf_value music_dir)
+MDRIVE=$(dirname $music_dir)
+
+case "$1" in
+	start)
+	start
+	;;
+
+	stop)
+	stop
+	;;
+
+	sleep)
+	sleep 20
+	;;
+esac
+
+#
+# $Log: client.in,v $
+#

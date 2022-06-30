@@ -1,0 +1,83 @@
+.TH pistopclient 1 "June 30, 2022" "manual"
+.SH NAME
+.PP
+pistopserver - pistop server to provide pistop server events
+.PP
+pistopclient - pistop client to watch pistop server events
+
+.SH SYNOPSIS
+.PP
+pistopserver [\f[I]options\f[]]
+.PP
+pistopclient [\f[I]options\f[]]
+
+.SH DESCRIPTION
+\fBpistopserver\fR and \fBpistopclient\fR together provide a way to achieve
+synchronized startup and shutdown of multiple clients associated with a
+single central server. This association can be arbitrary. See the section
+EXAMPLE.
+
+\fBpistopserver\fR needs to be run with fd 0 and 1 connected to some TCP/IP
+port. This can be done using \fBtcpserver\fR(1), \fBxinetd\fR(1). It can be
+any unused port, but having a port greater than 1024 will allow
+\fBpistopserver\fR to be run as non-root user.  Similarly
+\fBpistopserver\fR needs to use TCP/IP port connected to port 5555, with fd
+6 reading from the network and fd 7 writing to the network. This can be
+easily done by using tcpclient(1). \fBpistopclient\fR must be run under
+root if it has to start/stop system services. It will look for a script
+named \fBpistopstart\fR under $HOME/.pistop directory. If this script is
+not found, it will use \fBpistopstart\fR script in @pistoplibexecdir@. The
+default \fBpistopstart\fR script starts/stops autofs and mpd service on
+startup/shutdown and additionally mounts NFS/samba shares.
+\fBpistopstart\fR scripts expects either \fIstart\fR or \fIstop\fR
+arguments. If you have the script/program in @pistoplibexecdir@, it will
+get updated with the latest script in @pistoplibexecdir@. If you want to
+have your own script and prevent it getting upgraded on update, create a
+file named \fI.pistopstart.noovewrite\fB. in @pistoplibexecdir@ directory.
+If you have your own custom script in $HOME/.pistop directory and don't
+require root privileges to stop/start your services, you can edit
+\fI@servicedir@/fclient/variables/USER\fR and restart \fBfclient\fR
+supervised service.
+
+You can have \fBpistopserver\fR and \fBpistopclient\fR to be automatically
+started on bootup by creating appropriate configuration in rc, systemd(1)
+or as a supervised service under svscan(8). You can use
+\fI@pistoplibexecdir@/create_service\fR to create a supervised service for
+\fBpistopserver\fR on your central server or a supervised service for
+\fBpistopclient\fR on your satellite hosts as shown in the examples below.
+
+.EX
+Assuming your central host is 192.168.1.100
+
+Create a supervised service for pistopserver on 192.168.1.100
+create_service --servicedir=/service --service_name=fclient \
+  --user=pi --host=192.168.2.101 --port=5555 --add-service
+
+Create a supervised service for pistopclient on all satellite hosts
+create_service --servicedir=/service --service_name=fserver \
+  --user=pi --host=192.168.1.100 --port=5555 --add-service
+.EE
+
+.SH EXAMPLE
+An example of an association is a host with \fBmpd\fR(1) running providing
+it's music database using the simple database plugin and all clients using
+the same database using the proxy database plugin. When you shutdown the
+host with the music database and you want all connected clients to
+shutdown, you can use \fBpistopserver\fR and \fBpistopclient\fR. This is
+what you need to do
+
+.EX
+1. run pistopserver on the host having the mpd database under tcpserver(1)
+   tcpserver -vDHRo 0 5555 @pistoplibexecdir@/pistopserver
+2. run pistopclient on all clients
+   tcpclient -vDHR -t 300 \fIipaddr\fR 5555 @pistoplibexecdir@/pistopclient
+.EE
+
+.SH SEE ALSO
+pistopclient(1),
+tcpserver(1),
+tcpclient(1),
+svscan(8),
+supervise(8),
+svc(1),
+mpd(1)

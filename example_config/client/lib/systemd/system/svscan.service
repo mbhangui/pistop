@@ -1,0 +1,55 @@
+# svscan - runlevel compatibility
+# WARNING: This file was auto-generated. Do not edit!
+#
+#
+# $Log: systemd.in,v $
+# Revision 1.9  2021-06-22 10:45:21+05:30  Cprogrammer
+# added RestartSec parameter and moved PrivateTmp to override.conf
+#
+# Revision 1.8  2021-04-08 11:29:36+05:30  Cprogrammer
+# use PrivateTmp in systemd service
+#
+# Revision 1.7  2020-11-27 17:30:52+05:30  Cprogrammer
+# changed name to SVscan Service
+#
+# Revision 1.6  2020-10-09 12:48:03+05:30  Cprogrammer
+# servicedir changed to libexecdir/service
+#
+# Revision 1.5  2020-04-07 11:55:29+05:30  Cprogrammer
+# fixed path of sysv script for start/stop svscan services
+#
+# Revision 1.4  2017-10-11 10:53:32+05:30  Cprogrammer
+# added alias indimail, indimail-mta for svscan service
+#
+# Revision 1.3  2017-01-04 15:47:04+05:30  Cprogrammer
+# moved svscanboot to libexecdir
+#
+# Revision 1.2  2016-06-03 09:58:50+05:30  Cprogrammer
+# moved svscanboot to sbin
+#
+# Revision 1.1  2011-07-21 13:25:24+05:30  Cprogrammer
+# Initial revision
+#
+# 
+# Start daemontools
+# to start - systemctl start svscan|indimail|indimail-mta
+# to stop  - systemctl stop  svscan|indimail|indimail-mta
+#
+# $Id: systemd.in,v 1.9 2021-06-22 10:45:21+05:30 Cprogrammer Exp mbhangui $
+#
+[Unit]
+Description=SVscan Service
+After=local-fs.target network.target
+
+[Service]
+ExecStart=/usr/libexec/indimail/svscanboot /service
+ExecStop=/etc/init.d/svscan stop
+Restart=on-failure
+RestartSec=10
+Type=simple
+PrivateTmp=no
+
+[Install]
+Alias=indimail.service
+Alias=indimail-mta.service
+WantedBy=multi-user.target

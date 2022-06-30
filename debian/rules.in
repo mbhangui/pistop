@@ -21,6 +21,7 @@ endif
 
 prefix=@prefix@
 libexecdir=@libexecdir@
+mandir=@mandir@
 sysconfdir=@sysconfdir@
 version=@version@
 package_name="pistop"

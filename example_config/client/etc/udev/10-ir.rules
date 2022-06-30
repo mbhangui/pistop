@@ -1,0 +1,2 @@
+KERNEL=="event*",ATTRS{name}=="AverMedia IR USB K/B2",SYMLINK="input/aver_remote"
+KERNEL=="event*",ATTRS{name}=="Media Center Ed. eHome Infrared Remote Transceiver (0471:0815)",SYMLINK="input/mce_remote"

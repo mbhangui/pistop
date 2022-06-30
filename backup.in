@@ -1,5 +1,8 @@
 #!/bin/sh
 # $Log: backup.in,v $
+# Revision 1.6  2022-06-30 01:27:55+05:30  Cprogrammer
+# exit if DEST is not set
+#
 # Revision 1.5  2021-09-29 19:38:02+05:30  Cprogrammer
 # reverted backup script to v1.4
 #
@@ -16,9 +19,12 @@
 # Initial revision
 #
 #
-# $Id: backup.in,v 1.5 2021-09-29 19:38:02+05:30 Cprogrammer Exp mbhangui $
+# $Id: backup.in,v 1.6 2022-06-30 01:27:55+05:30 Cprogrammer Exp mbhangui $
 #
 HOST=$(uname -n)
+if [ -z "$DEST" ] ; then
+	exit 0
+fi
 if [ ! -d $DEST/backup ] ; then
 	echo "$DEST/backup doesn't exist" 1>&2
 	exit 1

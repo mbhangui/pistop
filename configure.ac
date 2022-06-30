@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([pistop],m4_normalize(m4_include([conf-version])),m4_normalize(m4_include([conf-email])),pistop,[https://github.com/mbhangui/pistop])
-AC_CONFIG_SRCDIR([server.c])
+AC_CONFIG_SRCDIR([pistopserver.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign])
 
@@ -36,7 +36,9 @@ AC_ARG_ENABLE(servicedir, [  --enable-servicedir=dir         directory where sup
 		fi
 	])
 AC_DEFINE_UNQUOTED(SERVICEDIR,"$servicedir",supervise service directory)
+AC_DEFINE_UNQUOTED(LIBEXECDIR,"$libexecdir", libexec directory)
 AC_SUBST(servicedir)
+AC_SUBST(prefix)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([pistop-release:pistop-release.in],[], [])

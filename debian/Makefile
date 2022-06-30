@@ -1,5 +1,6 @@
 prefix=/usr
 libexecdir=/usr/libexec
+mandir=/usr/share/man
 sysconfdir=/etc
 logdir=/var/log/svc
 servicedir=/service
