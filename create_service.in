@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.47 2022-06-30 16:38:52+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.48 2022-07-03 12:22:44+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -275,8 +275,8 @@ add_service()
 		echo "  if [ \$? -eq 0 ] ; then"
 		echo "    echo \"\$HOST:\$PORT is alive\""
 		echo "    exec /usr/bin/envdir variables sh -c \"\\"
-		echo "      exec /usr/bin/setuidgid \$USER /usr/bin/tcpclient -vDHR -t \\\$TIMEOUT \\"
-		echo "        \$HOST \$PORT @pistoplibexecdir@/pistopclient start 2>&1\""
+		echo "      exec /usr/bin/setuidgid \$USER /usr/bin/tcpclient -vDHR -n \\\"\\\" \\"
+		echo "        -t \\\$TIMEOUT \$HOST \$PORT @pistoplibexecdir@/pistopclient 2>&1\""
 		echo "  else"
 		echo "    echo \"\$HOST:\$PORT is down. Sleeping for 30 seconds...\""
 		echo "    sleep 30"
@@ -489,7 +489,7 @@ prog_args="$0 $*"
 SYSTEM=$(uname -s)
 music_dir=$(get_mpd_conf_value music_dir)
 MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.47 2022-06-30 16:38:52+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.48 2022-07-03 12:22:44+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -546,6 +546,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.48  2022-07-03 12:22:44+05:30  Cprogrammer
+# pass -n "" for fclient to use un-encrypted channel
+#
 # Revision 1.47  2022-06-30 16:38:52+05:30  Cprogrammer
 # fixed bugs
 #
