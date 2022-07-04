@@ -141,6 +141,11 @@ if [ $argv1 -eq 2 ] ; then # upgrade
         echo $options > %{servicedir}/$i/variables/.options
       fi
     fi
+    user=`getent passwd 1000|cut -d: -f1`
+    grep "\--user" %{servicedir}/$i/variables/.options >/dev/null
+    if [ $? -ne 0 ] ; then
+      sed -i "s/--service_name=${i}/--service_name=${i} --user=${user}/" %{servicedir}/$i/variables/.options
+    fi
     %{_prefix}/sbin/minisvc --servicedir=%{servicedir} --refreshsvc="%{servicedir}/$i" --silent
     %{_prefix}/sbin/minisvc --servicedir=%{servicedir} --service-name=$i \
       --export-variables=%{servicedir}/$i/variables/.variables --force  --silent

@@ -5,6 +5,7 @@
 
 set -e
 prefix=@prefix@
+servicedir=@servicedir@
 # summary of how this script can be called:
 #        * <postinst> `configure' <most-recently-configured-version>
 #        * <old-postinst> `abort-upgrade' <new version>
@@ -43,20 +44,27 @@ if [ $upgrade -eq 1 ] ; then # upgrade
 	# refresh fclient, fserver services
 	for i in fclient fserver update
 	do
-		if [ ! -d /service/$i ] ; then
+		if [ ! -d ${servicedir}/$i ] ; then
 			continue
 		fi
 		# earlier installs did not have .options
-		if [ ! -f /service/$i/variables/.options ] ; then
-			mkdir -p /service/$i/variables
-			options=`grep "^#" /service/$i/run | sed -n 2p | cut -c3-`
+		if [ ! -f ${servicedir}/$i/variables/.options ] ; then
+			mkdir -p ${servicedir}/$i/variables
+			options=`grep "^#" ${servicedir}/$i/run | sed -n 2p | cut -c3-`
 			if [ -n "$options" ] ; then
-				echo $options > /service/$i/variables/.options
+				echo $options > ${servicedir}/$i/variables/.options
 			fi
 		fi
-		${prefix}/sbin/minisvc --servicedir=/service --refreshsvc="/service/$i" --silent
-		${prefix}/sbin/minisvc --servicedir=/service --service-name=$i \
-			--export-variables=/service/$i/variables/.variables --force --silent
+		set +e
+		user=`getent passwd 1000|cut -d: -f1`
+		grep "\--user" ${servicedir}/$i/variables/.options >/dev/null
+		if [ $? -ne 0 ] ; then
+			sed -i "s/--service_name=${i}/--service_name=${i} --user=${user}/" ${servicedir}/$i/variables/.options
+		fi
+		set -e
+		${prefix}/sbin/minisvc --servicedir=${servicedir} --refreshsvc="${servicedir}/$i" --silent
+		${prefix}/sbin/minisvc --servicedir=${servicedir} --service-name=$i \
+			--export-variables=${servicedir}/$i/variables/.variables --force --silent
 	done
 	# start fclient, fserver services after upgrade
 	if [ -d /run ] ; then
@@ -64,18 +72,18 @@ if [ $upgrade -eq 1 ] ; then # upgrade
 	elif [ -d /var/run ] ; then
 		rundir=/var/run/svscan
 	else
-		rundir=/service
+		rundir=${servicedir}
 	fi
 	set +e
 	for i in fclient fserver update
 	do
-		if [ ! -d /service/$i ] ; then
+		if [ ! -d ${servicedir}/$i ] ; then
 			continue
 		fi
-		${prefix}/bin/svok /service/$i >/dev/null 2>&1
+		${prefix}/bin/svok ${servicedir}/$i >/dev/null 2>&1
 		if [ $? -eq 0 -a -f ${rundir}/$i/.down ] ; then
 			rm -f ${rundir}/$i/.down
-			${prefix}/bin/svc -u /service/$i
+			${prefix}/bin/svc -u ${servicedir}/$i
 		fi
 	done
 	set -e
@@ -83,10 +91,10 @@ if [ $upgrade -eq 1 ] ; then # upgrade
 fi
 for i in fclient fserver update
 do
-	if [ ! -d /service/$i ] ; then
+	if [ ! -d ${servicedir}/$i ] ; then
 		continue
 	fi
-	${prefix}/sbin/minisvc --servicedir=/service --service-name=$i \
-		--export-variables=/service/$i/variables/.variables --force --silent
+	${prefix}/sbin/minisvc --servicedir=${servicedir} --service-name=$i \
+		--export-variables=${servicedir}/$i/variables/.variables --force --silent
 done
 exit 0
