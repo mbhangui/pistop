@@ -1,0 +1,10 @@
+/var/log/mpd/*.log {
+	daily
+	missingok
+	rotate 2
+	compress
+	notifempty
+	copytruncate
+	create 644
+}
+
