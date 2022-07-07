@@ -185,7 +185,7 @@ Prebuilt binaries using openSUSE Build Service are available for pistop for
 
 Use the below url for installation
 
-https://software.opensuse.org//download.html?project=home%3Ambhangui%3Adietpi&package=pistop
+https://software.opensuse.org//download.html?project=home%3Ambhangui%3Araspi&package=pistop
 
 
 ## IMPORTANT NOTE for binary builds on debian
