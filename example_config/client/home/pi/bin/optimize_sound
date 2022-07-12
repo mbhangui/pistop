@@ -1,16 +1,19 @@
 #!/bin/sh
 
-# Based on https://github.com/brianlight/Linux-Audio-Adjustments
-
 if [ -x /usr/bin/chrt ] ; then
   #Reduce Audio thread latency
-  chrt -f -p 54 $(pgrep ksoftirqd/0)
-  chrt -f -p 54 $(pgrep ksoftirqd/1)
-  chrt -f -p 54 $(pgrep ksoftirqd/2)
-  chrt -f -p 54 $(pgrep ksoftirqd/3)
-
+  for i in 0 1 2 3 4
+  do
+    pid=$(pgrep ksoftirqd/$i)
+    if [ -n "$pid" -a $pid -gt 1] ; then
+      chrt -f -p 54 $pid
+    fi
+  done
   #Uncomment for MPD Affinity and Priority
-  chrt -f -p 81 $(pidof mpd)
+  pid=$(pidof mpd)
+  if [ -n "$pid" -a $pid -gt 1] ; then
+    chrt -f -p 81
+  fi
   #taskset -c -p 1 $(pidof mpd)
 fi
 
@@ -21,7 +24,43 @@ modprobe snd-usb-audio nrpacks=1
 #echo 0x0 > /sys/devices/platform/soc/3f980000.usb/buspower
 
 #Reduce operating system latency
-#echo noop > /sys/block/mmcblk0/queue/scheduler
-echo 1000000 > /proc/sys/kernel/sched_latency_ns
-echo 100000  > /proc/sys/kernel/sched_min_granularity_ns
-echo 25000   > /proc/sys/kernel/sched_wakeup_granularity_ns
+if [ -f /sys/block/mmcblk0/queue/scheduler ] ; then
+  echo noop > /sys/block/mmcblk0/queue/scheduler
+fi
+if [ -f /proc/sys/kernel/sched_latency_ns ] ; then
+  echo 1000000 > /proc/sys/kernel/sched_latency_ns
+fi
+if [ -f /proc/sys/kernel/sched_min_granularity_ns ] ; then
+  echo 100000  > /proc/sys/kernel/sched_min_granularity_ns
+fi
+if [ -f /proc/sys/kernel/sched_wakeup_granularity_ns ] ; then
+  echo 25000   > /proc/sys/kernel/sched_wakeup_granularity_ns
+fi
+hardware= $(cat /proc/cpuinfo|grep Hardware|cut -d: -f2|awk '{print $1}')
+do_scale=0
+case $hardware in
+  Allwinner) # bananapi
+  model=0
+  ;;
+  bcm2835) # raspberrypi
+  model=$(cat /proc/cpuinfo|grep Model|cut -d: -f2|awk '{print $3}')
+  if [ $model -ne 4 ] ; then
+    do_scale=1
+  fi
+  ;;
+esac
+if [ $do_scale -eq 1 ] ; then
+  SYS_CPUFREQ_GOVERNOR=/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+  if [ -f $SYS_CPUFREQ_GOVERNOR ]; then
+    echo "ondemand" > $SYS_CPUFREQ_GOVERNOR
+    if [ -f /sys/devices/system/cpu/cpufreq/ondemand/up_threshold ] ; then
+      echo 50 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
+    fi
+    if [ -f /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate ] ; then
+      echo 100000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+    fi
+    if [ -f /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor ] ; then
+      echo 50 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
+    fi
+  fi
+fi
