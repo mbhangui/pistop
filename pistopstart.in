@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: $
+# $Id: pistopstart.in,v 1.1 2022-07-12 17:32:59+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
@@ -160,6 +160,13 @@ start()
 	if [ -d $MDRIVE/backup ] ; then
 		@pistoplibexecdir@/backup
 	fi
+	systemctl list-unit-files sound.service >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+		line=$(systemctl list-units --all sound.service|sed -n 2p)
+		if [ "$2" != "loaded" ] ; then
+			systemctl start sound.service
+		fi
+	fi
 	echo "Waiting for poweroff"
 }
 
@@ -183,5 +190,8 @@ case "$1" in
 esac
 
 #
-# $Log: client.in,v $
+# $Log: pistopstart.in,v $
+# Revision 1.1  2022-07-12 17:32:59+05:30  Cprogrammer
+# Initial revision
 #
+# 
