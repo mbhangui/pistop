@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.49 2022-07-12 17:24:26+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.50 2022-07-13 17:15:40+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -114,7 +114,7 @@ add_service()
 	esac
 	if [ -n "$home" ] ; then
 		if [ "$service_name" = "fclient" ] ; then
-			check_update_if_diff $servicedir/$service_name/variables/PATH "/bin:/usr/bin:@prefix@/bin:$home/.pistop:/usr/local/bin:/opt/local/bin"
+			check_update_if_diff $servicedir/$service_name/variables/PATH "/bin:/usr/bin:@prefix@/bin:$home/.pistop:/usr/local/bin:/opt/local/bin:/sbin:/usr/sbin"
 			check_update_if_diff $servicedir/$service_name/variables/HOME "$home"
 		elif [ "$service_name" = "update" ] ; then
 			check_update_if_diff $servicedir/$service_name/variables/HOME "$home"
@@ -288,7 +288,7 @@ add_service()
 		chmod +x $servicedir/$service_name/run
 		(
 		echo "#!/bin/sh"
-		echo "exec /usr/bin/envdir -c variables @pistoplibexecdir@/pistopstart stop"
+		echo "exec @pistoplibexecdir@/pistopstart stop"
 		) > $servicedir/$service_name/shutdown
 		chmod +x $servicedir/$service_name/shutdown
 		if [ ! -f $servicedir/$service_name/variables/POWER_OFF ] ; then
@@ -491,7 +491,7 @@ prog_args="$0 $*"
 SYSTEM=$(uname -s)
 music_dir=$(get_mpd_conf_value music_dir)
 MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.49 2022-07-12 17:24:26+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.50 2022-07-13 17:15:40+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -548,6 +548,10 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.50  2022-07-13 17:15:40+05:30  Cprogrammer
+# added /sbin, /usr/sbin to PATH
+# skip setting env variables when running /service/fclient/shutdown
+#
 # Revision 1.49  2022-07-12 17:24:26+05:30  Cprogrammer
 # added MDRIVE env variable
 #
