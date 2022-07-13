@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.1 2022-07-12 17:32:59+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.2 2022-07-13 17:16:29+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
@@ -73,6 +73,10 @@ stop()
 				break
 			fi
 		done
+	fi
+	if [ -n "$POWER_OFF" ] ; then
+		echo "shutdown -h now"
+		shutdown -h now
 	fi
 }
 
@@ -191,6 +195,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.2  2022-07-13 17:16:29+05:30  Cprogrammer
+# fixed power off when fserver service is shutdown
+#
 # Revision 1.1  2022-07-12 17:32:59+05:30  Cprogrammer
 # Initial revision
 #
