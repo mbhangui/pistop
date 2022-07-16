@@ -88,6 +88,7 @@ start()
 	mpd_was_down=0
 	autofs_was_down=0
 	mdrive_mounted=0
+	echo "Initializing $(uname -n) localtime $(date)" 1>&7
 	while true
 	do
 		# 1. we assume we are running on Linux mostly
