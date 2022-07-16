@@ -1,5 +1,8 @@
 /*
- * $Log: $
+ * $Log: pistopclient.c,v $
+ * Revision 1.1  2022-07-16 16:35:32+05:30  Cprogrammer
+ * Initial revision
+ *
  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
