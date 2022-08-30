@@ -29,15 +29,11 @@ named \fBpistopstart\fR under $HOME/.pistop directory. If this script is
 not found, it will use \fBpistopstart\fR script in @pistoplibexecdir@. The
 default \fBpistopstart\fR script starts/stops autofs and mpd service on
 startup/shutdown and additionally mounts NFS/samba shares.
-\fBpistopstart\fR scripts expects either \fIstart\fR or \fIstop\fR
-arguments. If you have the script/program in @pistoplibexecdir@, it will
-get updated with the latest script in @pistoplibexecdir@. If you want to
-have your own script and prevent it getting upgraded on update, create a
-file named \fI.pistopstart.noovewrite\fB. in @pistoplibexecdir@ directory.
-If you have your own custom script in $HOME/.pistop directory and don't
-require root privileges to stop/start your services, you can edit
-\fI@servicedir@/fclient/variables/USER\fR and restart \fBfclient\fR
-supervised service.
+\fBpistopstart\fR script expects either \fIstart\fR or \fIstop\fR
+arguments. If you have the script/program in $HOME/.pistop it will get
+updated with the latest script in @pistoplibexecdir@. To prevent your
+script from getting automatically upgraded, create a file named
+\fI.pistopstart.noovewrite\fR in @pistoplibexecdir@ directory.
 
 You can have \fBpistopserver\fR and \fBpistopclient\fR to be automatically
 started on bootup by creating appropriate configuration in rc, systemd(1)
@@ -57,6 +53,11 @@ Create a supervised service for pistopclient on all satellite hosts
 create_service --servicedir=/service --service_name=fserver \
   --user=pi --host=192.168.1.100 --port=5555 --add-service
 .EE
+
+If you have your own custom script in $HOME/.pistop directory and don't
+require root privileges to stop/start your services, you can edit
+\fI@servicedir@/fclient/variables/USER\fR and restart \fBfclient\fR
+supervised service.
 
 .SH EXAMPLE
 An example of an association is a host with \fBmpd\fR(1) running providing
