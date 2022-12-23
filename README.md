@@ -175,6 +175,8 @@ $ sudo /usr/libexec/pistop/create_service --service_name=rsync --add-service
 
 ## Prebuilt Binaries
 
+[![pistop](https://build.opensuse.org/projects/home:mbhangui:raspi/packages/pistop/badge.svg?type=percent)](https://build.opensuse.org/package/show/home:mbhangui:raspi/pistop)
+
 Prebuilt binaries using openSUSE Build Service are available for pistop for
 
 * Debian (including ARM images for Debian 10 which work (and tested) for RaspberryPI (model 2,3 & 4) and Allo Sparky)
