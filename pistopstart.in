@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.2 2022-07-13 17:16:29+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.3 2022-12-27 10:36:13+05:30 Cprogrammer Exp mbhangui $
 #
 
 suicide()
@@ -196,6 +196,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.3  2022-12-27 10:36:13+05:30  Cprogrammer
+# added debug log
+#
 # Revision 1.2  2022-07-13 17:16:29+05:30  Cprogrammer
 # fixed power off when fserver service is shutdown
 #
