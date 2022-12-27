@@ -15,6 +15,8 @@ Release 1.1 Start 30/06/2022 End --/--/----
 09. create_service: suppress error for backup dir if MDrive is not mounted
 - 16/07/2022
 10. pistopstart.in: send initializing message with hostname, data to server
+- 27/07/2022
+11. create_service.in: updated for change in tcpserver -n option
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022

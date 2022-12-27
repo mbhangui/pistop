@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.51 2022-07-13 22:49:53+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.52 2022-12-27 10:35:54+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -273,7 +273,7 @@ add_service()
 		echo "  if [ \$? -eq 0 ] ; then"
 		echo "    echo \"\$HOST:\$PORT is alive\""
 		echo "    exec /usr/bin/envdir variables sh -c \"\\"
-		echo "      exec /usr/bin/setuidgid \$USER /usr/bin/tcpclient -vDHR -n \\\"\\\" \\"
+		echo "      exec /usr/bin/setuidgid \$USER /usr/bin/tcpclient -vDHR \\"
 		echo "        -t \\\$TIMEOUT \$HOST \$PORT @pistoplibexecdir@/pistopclient 2>&1\""
 		echo "  else"
 		echo "    echo \"\$HOST:\$PORT is down. Sleeping for 30 seconds...\""
@@ -487,7 +487,7 @@ prog_args="$0 $*"
 SYSTEM=$(uname -s)
 music_dir=$(get_mpd_conf_value music_dir)
 MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.51 2022-07-13 22:49:53+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.52 2022-12-27 10:35:54+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -544,6 +544,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.52  2022-12-27 10:35:54+05:30  Cprogrammer
+# updated for change in tcpclient -n option
+#
 # Revision 1.51  2022-07-13 22:49:53+05:30  Cprogrammer
 # suppress error for backup dir if MDrive is not mounted
 #
