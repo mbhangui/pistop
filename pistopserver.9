@@ -70,7 +70,8 @@ what you need to do
 .EX
 1. run pistopserver on the host having the mpd database under tcpserver(1)
    tcpserver -vDHRo 0 5555 @pistoplibexecdir@/pistopserver
-2. run pistopclient on all clients
+2. run pistopclient on all clients with IP of the above tcpserver host as
+   \fIipaddr\fR
    tcpclient -vDHR -t 300 \fIipaddr\fR 5555 @pistoplibexecdir@/pistopclient
 .EE
 
