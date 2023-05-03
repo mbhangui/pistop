@@ -1,7 +1,9 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.3 2022-12-27 10:36:13+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.4 2023-05-03 16:36:46+05:30 Cprogrammer Exp mbhangui $
 #
+
+systemctl=$(which systemctl)
 
 suicide()
 {
@@ -23,8 +25,8 @@ stop()
 	while true
 	do
 		echo "Stopping mpd.service"
-		if [ -x /usr/bin/systemctl ] ; then
-			systemctl stop mpd.service mpd.socket
+		if [ -n $systemctl ] ; then
+			$systemctl stop mpd.service mpd.socket
 		elif [ -d $servicedir/mpd ] ; then
 			svc -d $servicedir/mpd
 		else
@@ -54,11 +56,11 @@ stop()
 			sleep 1
 		done
 	fi
-	if [ -x /usr/bin/systemctl ] ; then
+	if [ -x $systemctl ] ; then
 		while true
 		do
 			echo "Stopping autofs.service"
-			systemctl stop autofs.service
+			$systemctl stop autofs.service
 			if [ $? -eq 0 ] ; then
 				echo "stopped autofs"
 				break
@@ -93,12 +95,12 @@ start()
 	do
 		# 1. we assume we are running on Linux mostly
 		# 2. If on mac/freebsd, we assume autofs has been setup
-		if [ -x /usr/bin/systemctl ] ; then
-			systemctl status autofs.service >/dev/null 2>&1
+		if [ -x $systemctl ] ; then
+			$systemctl status autofs.service >/dev/null 2>&1
 			if [ $? -ne 0 ] ; then
 				autofs_was_down=1
 				echo "starting automount filesystems"
-				systemctl start autofs.service
+				$systemctl start autofs.service
 				sleep 1
 				continue
 			else
@@ -118,13 +120,13 @@ start()
 			mdrive_mounted=1
 			echo "MDrive mounted"
 		fi
-		if [ -x /usr/bin/systemctl ] ; then
-			systemctl status mpd.service >/dev/null 2>&1
+		if [ -x $systemctl ] ; then
+			$systemctl status mpd.service >/dev/null 2>&1
 			if [ $? -ne 0 ] ; then
 				# trigger autofs to mount MDrive
 				mpd_was_down=1
 				echo "starting music player daemon"
-				systemctl start mpd.service
+				$systemctl start mpd.service
 			else
 				mpd_up=1
 				if [ $mpd_was_down -eq 1 ] ; then
@@ -152,7 +154,7 @@ start()
 		if [ $count -eq 60 ] ; then
 			echo "Giving up..."
 			svc -dx /service/fclient
-			systemctl stop autofs
+			$systemctl stop autofs
 			umount $MDRIVE
 			break
 		fi
@@ -165,11 +167,11 @@ start()
 	if [ -d $MDRIVE/backup ] ; then
 		@pistoplibexecdir@/backup
 	fi
-	systemctl list-unit-files sound.service >/dev/null 2>&1
+	$systemctl list-unit-files sound.service >/dev/null 2>&1
 	if [ $? -eq 0 ] ; then
 		line=$(systemctl list-units --all sound.service|sed -n 2p)
 		if [ "$2" != "loaded" ] ; then
-			systemctl start sound.service
+			$systemctl start sound.service
 		fi
 	fi
 	echo "Waiting for poweroff"
@@ -196,6 +198,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.4  2023-05-03 16:36:46+05:30  Cprogrammer
+# removed hardcoded systemctl path
+#
 # Revision 1.3  2022-12-27 10:36:13+05:30  Cprogrammer
 # added debug log
 #
