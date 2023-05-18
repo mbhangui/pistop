@@ -19,6 +19,9 @@ Release 1.1 Start 30/06/2022 End --/--/----
 11. create_service.in: updated for change in tcpserver -n option
 - 03/05/2023
 12. pistopstart: removed hardcoded systemctl path
+- 18/05/2023
+13. pistopstart: increased sleep duration if disk mount fails
+14. pistop.spec: updated SPEC file
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022
