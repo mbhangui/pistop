@@ -39,6 +39,7 @@ BuildRequires: libqmail-devel libqmail
 Requires: user(qmaill)
 Requires: group(nofiles)
 Requires: daemontools ucspi-tcp coreutils util-linux rsync at
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 pistop is a package that provides two services fclient and fserver.
@@ -69,7 +70,7 @@ echo "------------------------------------------------------"
 ) > %{name}-rpm.info
 
 %install
-rm -rf $RPM_BUILD_ROOT
+[ "%{buildroot}" != "/" ] && /bin/rm -fr %{buildroot}
 %{__make} -s DESTDIR=%{buildroot} install-strip
 %{__mkdir_p} %{buildroot}%{sysconfdir}
 install -m 0644 %{name}-rpm.info %{buildroot}%{sysconfdir}/%{name}/%{name}-rpm.info
@@ -84,8 +85,8 @@ install -m 0644 %{name}-rpm.info %{buildroot}%{sysconfdir}/%{name}/%{name}-rpm.i
 %attr(755,root,root)                    %{_prefix}/libexec/%{name}/pistopstart
 %attr(755,root,root)                    %{_prefix}/libexec/%{name}/backup
 %attr(755,root,root)                    %{_prefix}/libexec/%{name}/create_service
-%attr(644,root,root) %config(noreplace) %{sysconfdir}/%{name}/%{name}-release
-%attr(644,root,root) %config(noreplace) %{sysconfdir}/%{name}/%{name}-rpm.info
+%attr(644,root,root)                    %{sysconfdir}/%{name}/%{name}-release
+%attr(644,root,root)                    %{sysconfdir}/%{name}/%{name}-rpm.info
 
 %attr(644,root,root)                    %{_prefix}/share/man/man1/pistopserver.1.gz
 %attr(644,root,root)                    %{_prefix}/share/man/man1/pistopclient.1.gz
