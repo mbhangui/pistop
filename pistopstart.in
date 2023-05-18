@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.4 2023-05-03 16:36:46+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.5 2023-05-18 08:16:54+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -112,8 +112,8 @@ start()
 			fi
 		fi
 		if [ ! -f $MDRIVE/data/stats.db ] ; then
-			echo "MDrive not yet mounted"
-			sleep 1
+			echo "$MDrive not yet mounted"
+			sleep 5
 			continue
 		fi
 		if [ $mdrive_mounted -eq 0 ] ; then
@@ -198,6 +198,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.5  2023-05-18 08:16:54+05:30  Cprogrammer
+# increased duration of sleep if disk mount fails
+#
 # Revision 1.4  2023-05-03 16:36:46+05:30  Cprogrammer
 # removed hardcoded systemctl path
 #
