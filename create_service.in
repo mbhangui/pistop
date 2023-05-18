@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.52 2022-12-27 10:35:54+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.53 2023-05-18 08:16:00+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -165,6 +165,16 @@ add_service()
 			check_update_if_diff $servicedir/$service_name/variables/DEST "$MDRIVE"
 		fi
 	elif [ "$service_name" = "fserver" ] ; then
+		mkdir -p $home/.pistop
+		for i in pistopstart
+		do
+			if [ ! -f $home/.pistop/$i ] ; then
+				cp @pistoplibexecdir@/$i $home/.pistop
+			elif [ ! -f $home/.pistop/."$i".nooverwrite ] ; then
+				cp @pistoplibexecdir@/$i $home/.pistop
+			fi
+		done
+		chown -R $t_uid:$t_gid $home/.pistop
 		# HOST PORT USER MAXDAEMONS MDRIVE
 		check_update_if_diff $servicedir/$service_name/variables/HOST       $host
 		check_update_if_diff $servicedir/$service_name/variables/PORT       $port
@@ -487,7 +497,7 @@ prog_args="$0 $*"
 SYSTEM=$(uname -s)
 music_dir=$(get_mpd_conf_value music_dir)
 MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.52 2022-12-27 10:35:54+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.53 2023-05-18 08:16:00+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -544,6 +554,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.53  2023-05-18 08:16:00+05:30  Cprogrammer
+# copy pistopstart to $HOME/.pistop for fserver too
+#
 # Revision 1.52  2022-12-27 10:35:54+05:30  Cprogrammer
 # updated for change in tcpclient -n option
 #
