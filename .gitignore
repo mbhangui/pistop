@@ -93,3 +93,4 @@ pistopstart
 config.h.in
 client.in
 pistopserver.1
+conf-release

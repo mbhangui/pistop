@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.53 2023-05-18 08:16:00+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.54 2023-05-18 09:07:47+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -294,6 +294,7 @@ add_service()
 		chmod +x $servicedir/$service_name/run
 		(
 		echo "#!/bin/sh"
+		echo "killall pistopstart"
 		echo "exec @pistoplibexecdir@/pistopstart stop"
 		) > $servicedir/$service_name/shutdown
 		chmod +x $servicedir/$service_name/shutdown
@@ -497,7 +498,7 @@ prog_args="$0 $*"
 SYSTEM=$(uname -s)
 music_dir=$(get_mpd_conf_value music_dir)
 MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.53 2023-05-18 08:16:00+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.54 2023-05-18 09:07:47+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -554,6 +555,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.54  2023-05-18 09:07:47+05:30  Cprogrammer
+# kill pistopstart script if running in shutdown
+#
 # Revision 1.53  2023-05-18 08:16:00+05:30  Cprogrammer
 # copy pistopstart to $HOME/.pistop for fserver too
 #
