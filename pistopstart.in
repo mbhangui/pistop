@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.5 2023-05-18 08:16:54+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.6 2023-06-26 19:53:16+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -112,7 +112,7 @@ start()
 			fi
 		fi
 		if [ ! -f $MDRIVE/data/stats.db ] ; then
-			echo "$MDrive not yet mounted"
+			echo "MDrive [$MDrive] not yet mounted"
 			sleep 5
 			continue
 		fi
@@ -180,7 +180,13 @@ start()
 trap suicide TERM INT
 servicedir=@servicedir@
 music_dir=$(get_mpd_conf_value music_dir)
-MDRIVE=$(dirname $music_dir)
+t=$(dirname $music_dir)
+if [ -n "$t" ] ; then
+	MDRIVE=$t
+	echo "MDrive from mpd.conf is $MDRIVE"
+else
+	echo "MDrive variable set is $MDRIVE"
+fi
 
 case "$1" in
 	start)
@@ -198,6 +204,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.6  2023-06-26 19:53:16+05:30  Cprogrammer
+# Use MDRIVE from variables if not from /etc/mpd.conf
+#
 # Revision 1.5  2023-05-18 08:16:54+05:30  Cprogrammer
 # increased duration of sleep if disk mount fails
 #
