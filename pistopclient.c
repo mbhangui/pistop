@@ -1,5 +1,8 @@
 /*
  * $Log: pistopclient.c,v $
+ * Revision 1.2  2023-06-28 12:34:04+05:30  Cprogrammer
+ * added more info messages
+ *
  * Revision 1.1  2022-07-16 16:35:32+05:30  Cprogrammer
  * Initial revision
  *
@@ -24,10 +27,10 @@
 #include <fmt.h>
 #include <sgetopt.h>
 
-#define FATAL             "client: fatal: "
+#define FATAL             "pistopclient: fatal: "
 #define SELECTTIMEOUT     5
 
-char           *usage = "usage: client [-d timeout]";
+char           *usage = "usage: pistopclient [-d timeout]";
 
 void
 out(char *str)
@@ -161,6 +164,10 @@ do_start(char *pistopstart)
 	pid_t           child;
 	int             wstat;
 
+	out("executing ");
+	out(pistopstart);
+	out(" start\n");
+	flush();
 	switch((child = fork()))
 	{
 	case -1:
@@ -192,7 +199,8 @@ main(int argc, char **argv)
 	struct timeval *tptr;
 	time_t          last_timeout;
 	char            buffer[256];
-	char           *ptr, *pistopstart;
+	stralloc        pistopstart = {0};
+	char           *ptr;
 	fd_set          rfds; /*- File descriptor mask for select -*/
 
 	sig_termcatch(sigterm);
@@ -209,19 +217,29 @@ main(int argc, char **argv)
 	}
 	if (chdir(ptr) == -1 || chdir(".pistop")== -1 )
 		strerr_die4sys(111, FATAL, "chdir: ", ptr, "/.pistopstart: ");
-	if (!access("pistopstart", X_OK))
-		pistopstart = "./pistopstart";
-	else
-	if (!access(LIBEXECDIR"/pistop/pistopstart", X_OK))
-		pistopstart = LIBEXECDIR"/pistop/pistopstart";
-	else {
-		errf("pistopstart not found\n");
+	if (!access("pistopstart", X_OK)) {
+		if (!stralloc_copys(&pistopstart, ptr) ||
+				!stralloc_catb(&pistopstart, "/.pistop/pistopstart", 20) ||
+				!stralloc_0(&pistopstart))
+			die_nomem();
+	} else
+	if (!access(LIBEXECDIR"/pistop/pistopstart", X_OK)) {
+		if (!stralloc_copys(&pistopstart, LIBEXECDIR) ||
+				!stralloc_catb(&pistopstart, "/pistop/pistopstart", 19) ||
+				!stralloc_0(&pistopstart))
+			die_nomem();
+	} else {
+		err("pistopstart not found in ");
+		err(LIBEXECDIR"/pistop");
+		err(" and ");
+		err(ptr);
+		errf("/.pistop\n");
 		_exit(100);
 	}
-	do_start(pistopstart);
+	do_start(pistopstart.s);
 	if (dataTimeout == -1) {
 		if (!(ptr = env_get("DATA_TIMEOUT")))
-			ptr = "1800";
+			ptr = "120";
 		scan_int(ptr, &dataTimeout);
 	}
 	if ((r = timeoutwrite(dataTimeout, 7, "wait\n", 5)) < 0)
@@ -265,22 +283,26 @@ main(int argc, char **argv)
 			if ((length = read(6, buffer, sizeof(buffer))) == -1)
 				strerr_die2sys(111, FATAL, "read-network: ");
 			if (!length) { /*- server died or network disconnect */
-				out("remote powered off\n");
-				flush();
 				close(6);
-				execl(pistopstart, "pistopstart", "stop", (char *) 0);
-				strerr_die4sys(111, FATAL, "execl: ", pistopstart, " stop: ");
+				out("lost connection with remote. executing ");
+				out(pistopstart.s);
+				out(" stop\n");
+				flush();
+				execl(pistopstart.s, "pistopstart", "stop", (char *) 0);
+				strerr_die4sys(111, FATAL, "execl: ", pistopstart.s, " stop: ");
 				_exit(0);
 			} 
-			if (substdio_put(subfderr, "[", 1) == -1 ||
+			if (substdio_put(subfderr, "got command [", 13) == -1 ||
 					substdio_put(subfderr, buffer, length) == -1 ||
-					substdio_put(subfderr, "]", 1) == -1 || substdio_flush(subfderr))
+					substdio_put(subfderr, "]\n", 2) == -1 || substdio_flush(subfderr))
 				die_write();
 			if (!str_diffn(buffer, "shutdown\n", 9)) {
-				out("remote powered off\n");
+				out("remote powered off executing ");
+				out(pistopstart.s);
+				out(" stop\n");
 				flush();
-				execl(pistopstart, "pistopstart", "stop", (char *) 0);
-				strerr_die4sys(111, FATAL, "execl: ", pistopstart, " stop: ");
+				execl(pistopstart.s, "pistopstart", "stop", (char *) 0);
+				strerr_die4sys(111, FATAL, "execl: ", pistopstart.s, " stop: ");
 				close(6);
 				_exit(0);
 			}

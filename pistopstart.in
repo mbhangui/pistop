@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.6 2023-06-26 19:53:16+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.7 2023-06-28 12:34:27+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -76,6 +76,18 @@ stop()
 			fi
 		done
 	fi
+	if [ -x /usr/bin/nc ] ; then
+		grep lcdhost /etc/hosts >/dev/null
+		if [ $? -eq 0 ] ; then
+			echo "Sending shutdown text to lcdhost"
+			if [ -z "$LCD_PORT" ] ; then
+				LCD_PORT=1806
+			fi
+			echo "3 0 3:$(uname -n) PowerOff" | /usr/bin/nc -u lcdhost $LCD_PORT
+			sleep 1
+		fi
+	fi
+	echo "Completed STOP Service"
 	if [ -n "$POWER_OFF" ] ; then
 		echo "shutdown -h now"
 		shutdown -h now
@@ -161,11 +173,34 @@ start()
 		sleep 20
 		count=`expr $count + 1`
 	done
+	if [ -x /usr/bin/nc ] ; then
+		grep lcdhost /etc/hosts >/dev/null
+		if [ $? -eq 0 ] ; then
+			echo "Sending startup text to lcdhost"
+			if [ -z "$LCD_PORT" ] ; then
+				LCD_PORT=1806
+			fi
+			UPTIME=$(LC_ALL=C uptime)
+			load=${UPTIME#*'load average: '}
+			load=${load//','}
+			echo "0 0 3:Load $load" | /usr/bin/nc -u lcdhost $LCD_PORT
+			sleep 1
+			echo "1 0 0:$(hostname -I)" | /usr/bin/nc -u lcdhost $LCD_PORT
+			sleep 1
+			echo "2 0 0:$(date +"%d-%m-%y %H:%M:%S")" | /usr/bin/nc -u lcdhost $LCD_PORT
+			sleep 1
+			echo "3 0 0:$(uname -n)" | /usr/bin/nc -u lcdhost $LCD_PORT
+			sleep 1
+		fi
+	fi
 	if [ -x $MDRIVE/bin/boot_sound ] ; then
 		$MDRIVE/bin/boot_sound >/dev/null 2>&1
 	fi
-	if [ -d $MDRIVE/backup ] ; then
+	if [ -n "DEST" -a -n "$BACKUP" -a -d $MDRIVE/backup ] ; then
+		echo "backing up configuraton"
 		@pistoplibexecdir@/backup
+	else
+		echo "Skipping backup of configuration"
 	fi
 	$systemctl list-unit-files sound.service >/dev/null 2>&1
 	if [ $? -eq 0 ] ; then
@@ -173,11 +208,26 @@ start()
 		if [ "$2" != "loaded" ] ; then
 			$systemctl start sound.service
 		fi
+	else
+		echo "sound.service not needed to be loaded"
 	fi
-	echo "Waiting for poweroff"
+	echo "Completed START Service"
 }
 
 trap suicide TERM INT
+if [ -n "$TCPREMOTEIP" ] ; then
+	if [ $# -gt 0 ] ; then
+		echo "Connected to $TCPREMOTEIP, executing $0 $*"
+	else
+		echo "Connected to $TCPREMOTEIP, executing $0"
+	fi
+else
+	if [ $# -gt 0 ] ; then
+		echo "Connected to remote, executing $0 $*"
+	else
+		echo "Connected to remote, executing $0"
+	fi
+fi
 servicedir=@servicedir@
 music_dir=$(get_mpd_conf_value music_dir)
 t=$(dirname $music_dir)
@@ -204,6 +254,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.7  2023-06-28 12:34:27+05:30  Cprogrammer
+# send startup/shutdown text to lcdhost
+#
 # Revision 1.6  2023-06-26 19:53:16+05:30  Cprogrammer
 # Use MDRIVE from variables if not from /etc/mpd.conf
 #

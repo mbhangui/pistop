@@ -25,6 +25,12 @@ Release 1.1 Start 30/06/2022 End --/--/----
 15. create_service: kill pistopstart script if running in shutdown
 - 26/06/2023
 16. pistopstart: Use MDRIVE from variables if not from /etc/mpd.conf
+- 28/06/2023
+17. pistopserver.c: display IP addresses
+18. pistopclient.c: added more info messages
+19. pistopstart: send startup/shutdown text to lcdhost running lcdDaemon from
+    lcd-daemon package
+20. create_service: execute $HOME/.pistop/pistopstart in shutdown script
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022

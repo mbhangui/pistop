@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.54 2023-05-18 09:07:47+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.55 2023-06-28 12:33:28+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -295,7 +295,12 @@ add_service()
 		(
 		echo "#!/bin/sh"
 		echo "killall pistopstart"
-		echo "exec @pistoplibexecdir@/pistopstart stop"
+		echo "sleep 1"
+		echo "if [ -x \$HOME/.pistop/pistopstart ] ; then"
+		echo "	exec \$HOME/.pistop/pistopstart stop"
+		echo "else"
+		echo "	exec @pistoplibexecdir@/pistopstart stop"
+		echo "fi"
 		) > $servicedir/$service_name/shutdown
 		chmod +x $servicedir/$service_name/shutdown
 		if [ ! -f $servicedir/$service_name/variables/POWER_OFF ] ; then
@@ -498,7 +503,7 @@ prog_args="$0 $*"
 SYSTEM=$(uname -s)
 music_dir=$(get_mpd_conf_value music_dir)
 MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.54 2023-05-18 09:07:47+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.55 2023-06-28 12:33:28+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -555,6 +560,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.55  2023-06-28 12:33:28+05:30  Cprogrammer
+# updated shutodwn to execute $HOME/.pistop/pistopstart
+#
 # Revision 1.54  2023-05-18 09:07:47+05:30  Cprogrammer
 # kill pistopstart script if running in shutdown
 #

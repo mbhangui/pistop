@@ -37,6 +37,7 @@
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
+
 #ifdef HAVE_QMAIL
 #include <subfd.h>
 #include <scan.h>
@@ -47,12 +48,13 @@
 #include <sig.h>
 #include <fmt.h>
 #include <sgetopt.h>
+#include <tcpremoteip.h>
 #endif
 
-#define FATAL             "server: fatal: "
+#define FATAL             "pistopserver: fatal: "
 #define SELECTTIMEOUT     5
 
-char           *usage = "usage: server [-d timeout]";
+char           *usage = "usage: pistopserver [-d timeout]";
 
 void
 out(char *str)
@@ -83,7 +85,7 @@ main(int argc, char **argv)
 	struct timeval *tptr;
 	time_t          last_timeout;
 	char            buffer[256];
-	char           *ptr;
+	char           *ptr, *remoteip;
 	fd_set          rfds;	/*- File descriptor mask for select -*/
 
 	sig_termcatch(sigterm);
@@ -96,7 +98,7 @@ main(int argc, char **argv)
 	}
 	if (dataTimeout == -1) {
 		if (!(ptr = env_get("DATA_TIMEOUT")))
-			ptr = "1800";
+			ptr = "120";
 		scan_int(ptr, &dataTimeout);
 	}
 	if (dataTimeout > 0)
@@ -106,6 +108,11 @@ main(int argc, char **argv)
 	timeout.tv_usec = 0;
 	tptr = (timeout.tv_sec ? &timeout : (struct timeval *) 0);
 
+	if (!(remoteip = env_get("TCP6REMOTEIP")) && !(remoteip = env_get("TCPREMOTEIP")))
+		remoteip = (char *) tcpremoteip(0);
+	out("Connection from ");
+	out(remoteip ? remoteip : "unknown");
+	out("\n");
 	last_timeout = timeout.tv_sec;
 	for (;;) {
 		FD_ZERO(&rfds);
@@ -140,6 +147,8 @@ main(int argc, char **argv)
 			if (!length) {
 				strnum[i = fmt_ulong(strnum, getpid())] = 0;
 				if (substdio_put(subfderr, strnum, i) == -1 ||
+						substdio_put(subfderr, ": ", 2) == -1 ||
+						substdio_puts(subfderr, remoteip) == -1 ||
 						substdio_put(subfderr, ": client dropped connection\n", 28) == -1 ||
 						substdio_flush(subfderr) == -1)
 					strerr_die2sys(111, FATAL, "write: ");
