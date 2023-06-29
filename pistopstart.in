@@ -82,7 +82,7 @@ stop()
 		else
 			lcdhost=$(grep lcdhost /etc/hosts|awk '{print $1}')
 		fi
-		if [ -n "$lcd_host" ] ; then
+		if [ -n "$lcdhost" ] ; then
 			echo "Sending shutdown text to $lcdhost"
 			if [ -z "$LCD_PORT" ] ; then
 				LCD_PORT=1806
