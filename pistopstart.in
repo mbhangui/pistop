@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.10 2023-06-29 10:30:07+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.11 2023-06-29 22:45:10+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -87,7 +87,11 @@ stop()
 			if [ -z "$LCD_PORT" ] ; then
 				LCD_PORT=1806
 			fi
-			echo "3 0 3:$(uname -n) PowerOff" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
+			if [ -n "$POWER_OFF" ] ; then
+				echo "3 0 3:$(uname -n) PowerOff" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
+			else
+				echo "3 0 3:$(uname -n) Off" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
+			fi
 			sleep 1
 		fi
 	fi
@@ -195,7 +199,7 @@ start()
 			sleep 1
 			echo "2 0 0:$(date +"%d-%m-%y %H:%M:%S")" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
 			sleep 1
-			echo "3 0 0:$(uname -n)" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
+			echo "3 0 0:$(uname -n) On" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
 			sleep 1
 		fi
 	fi
@@ -260,6 +264,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.11  2023-06-29 22:45:10+05:30  Cprogrammer
+# updated text message sent to lcdhost
+#
 # Revision 1.10  2023-06-29 10:30:07+05:30  Cprogrammer
 # use LCD_HOST if defined instead of lcdhost in /etc/hosts
 #
