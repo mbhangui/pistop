@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.55 2023-06-28 12:33:28+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.56 2023-06-29 17:37:17+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -21,36 +21,18 @@ add_service()
 {
 	if [ "$service_name" = "fclient" -o "$service_name" = "fserver" ] ; then
 		if [ $# -ne 3 ] ; then
-			(
-			echo "USAGE: create_service --servicedir=path --user=username \\"
-			echo "  --host=host --port=port"
-			echo "  --service_name=fclient|fserver \\"
-			echo "  --add-service"
-			echo
-			) 1>&2
-			return 1
+			usage
 		fi
 		host=$1
 		port=$2
 		userid=$3
 	elif [ "$service_name" = "update" ] ; then
 		if [ $# -ne 1 ] ; then
-			(
-			echo "USAGE: create_service --servicedir=path \\"
-			echo "  --service_name=update --add-service"
-			echo
-			) 1>&2
-			return 1
+			usage
 		fi
 		userid=$1
 	elif [ "$service_name" = "rsync" -a $# -ne 0 ] ; then
-		(
-		echo "USAGE: create_service --servicedir=path \\"
-		echo "  --host=host --port=port"
-		echo "  --service_name=rsync --add-service"
-		echo
-		) 1>&2
-		return 1
+		usage
 	fi
 	case "$SYSTEM" in
 		Linux)
@@ -156,6 +138,8 @@ add_service()
 		chown -R $t_uid:$t_gid $home/.pistop
 		check_update_if_diff $servicedir/$service_name/variables/HOST       $host
 		check_update_if_diff $servicedir/$service_name/variables/PORT       $port
+		check_update_if_diff $servicedir/$service_name/variables/LCD_HOST   $lcdhost
+		check_update_if_diff $servicedir/$service_name/variables/LCD_PORT   $lcdport
 		check_update_if_diff $servicedir/$service_name/variables/TIMEOUT    300
 		check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
 		check_update_if_diff $servicedir/$service_name/variables/USER      "root"
@@ -178,6 +162,8 @@ add_service()
 		# HOST PORT USER MAXDAEMONS MDRIVE
 		check_update_if_diff $servicedir/$service_name/variables/HOST       $host
 		check_update_if_diff $servicedir/$service_name/variables/PORT       $port
+		check_update_if_diff $servicedir/$service_name/variables/LCD_HOST   $lcdhost
+		check_update_if_diff $servicedir/$service_name/variables/LCD_PORT   $lcdport
 		check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
 		check_update_if_diff $servicedir/$service_name/variables/USER      "$user"
 		check_update_if_diff $servicedir/$service_name/variables/UID       "$t_uid"
@@ -480,16 +466,26 @@ del_service()
 
 usage()
 {
-echo "Usage: create_service [OPTIONS]"
-echo "create_service --servicedir=dir --service_name=name [--user=username] --host=host --port=port --add-service"
-echo "  or"
-echo "create_service --servicedir=dir --service_name=name --del-service"
-exit $1
+	(
+	echo "USAGE: create_service --servicedir=path\\"
+	echo "  --service_name=fclient|fserver\\"
+	echo "  --user=username --host=host --port=port\\"
+	echo "  --lcdhost=host --lcdport=port\\"
+	echo "  --add-service"
+	echo " or"
+	echo "USAGE: create_service --servicedir=path\\"
+	echo "  --service_name=update --add-service"
+	echo " or"
+	echo "USAGE: create_service --servicedir=path\\"
+	echo "  --service_name=rsync --host=host --port=port\\"
+	echo "  --add-service"
+	) 1>&2
+	exit 1
 }
 
 ################################# Main ##################################
 if test $# -eq 0; then
-	usage 1
+	usage
 fi
 ID=$(id -u)
 if [ $ID -ne 0 ] ; then
@@ -503,7 +499,7 @@ prog_args="$0 $*"
 SYSTEM=$(uname -s)
 music_dir=$(get_mpd_conf_value music_dir)
 MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.55 2023-06-28 12:33:28+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.56 2023-06-29 17:37:17+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -531,6 +527,12 @@ while test $# -gt 0; do
 	--port=*)
 	port=$optarg
 	;;
+	--lcdhost=*)
+	lcdhost=$optarg
+	;;
+	--lcdport=*)
+	lcdport=$optarg
+	;;
 
 	--add-service)
 	if [ -z "$servicedir" -o -z "$service_name" ] ; then
@@ -553,13 +555,16 @@ while test $# -gt 0; do
 	*)
 	echo "invalid option [$1]"
 	read key
-	usage 1
+	usage
 	;;
 	esac
 	shift
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.56  2023-06-29 17:37:17+05:30  Cprogrammer
+# added --lcdhost, --lcdport to create LCD_HOST, LCD_PORT env variables
+#
 # Revision 1.55  2023-06-28 12:33:28+05:30  Cprogrammer
 # updated shutodwn to execute $HOME/.pistop/pistopstart
 #

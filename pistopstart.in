@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.7 2023-06-28 12:34:27+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.10 2023-06-29 10:30:07+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -77,13 +77,17 @@ stop()
 		done
 	fi
 	if [ -x /usr/bin/nc ] ; then
-		grep lcdhost /etc/hosts >/dev/null
-		if [ $? -eq 0 ] ; then
-			echo "Sending shutdown text to lcdhost"
+		if [ -n "$LCD_HOST" ] ; then
+			lcdhost=$LCD_HOST
+		else
+			lcdhost=$(grep lcdhost /etc/hosts|awk '{print $1}')
+		fi
+		if [ -n "$lcd_host" ] ; then
+			echo "Sending shutdown text to $lcdhost"
 			if [ -z "$LCD_PORT" ] ; then
 				LCD_PORT=1806
 			fi
-			echo "3 0 3:$(uname -n) PowerOff" | /usr/bin/nc -u lcdhost $LCD_PORT
+			echo "3 0 3:$(uname -n) PowerOff" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
 			sleep 1
 		fi
 	fi
@@ -174,22 +178,24 @@ start()
 		count=`expr $count + 1`
 	done
 	if [ -x /usr/bin/nc ] ; then
-		grep lcdhost /etc/hosts >/dev/null
-		if [ $? -eq 0 ] ; then
-			echo "Sending startup text to lcdhost"
+		if [ -n "$LCD_HOST" ] ; then
+			lcdhost=$LCD_HOST
+		else
+			lcdhost=$(grep lcdhost /etc/hosts|awk '{print $1}')
+		fi
+		if [ -n "$lcdhost" ] ; then
+			echo "Sending startup text to $lcdhost"
 			if [ -z "$LCD_PORT" ] ; then
 				LCD_PORT=1806
 			fi
-			UPTIME=$(LC_ALL=C uptime)
-			load=${UPTIME#*'load average: '}
-			load=${load//','}
-			echo "0 0 3:Load $load" | /usr/bin/nc -u lcdhost $LCD_PORT
+			load=$(cat /proc/loadavg|awk '{print $1" "$2" "$3}')
+			echo "0 0 3:Load $load" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
 			sleep 1
-			echo "1 0 0:$(hostname -I)" | /usr/bin/nc -u lcdhost $LCD_PORT
+			echo "1 0 0:$(hostname -I)" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
 			sleep 1
-			echo "2 0 0:$(date +"%d-%m-%y %H:%M:%S")" | /usr/bin/nc -u lcdhost $LCD_PORT
+			echo "2 0 0:$(date +"%d-%m-%y %H:%M:%S")" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
 			sleep 1
-			echo "3 0 0:$(uname -n)" | /usr/bin/nc -u lcdhost $LCD_PORT
+			echo "3 0 0:$(uname -n)" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
 			sleep 1
 		fi
 	fi
@@ -254,6 +260,15 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.10  2023-06-29 10:30:07+05:30  Cprogrammer
+# use LCD_HOST if defined instead of lcdhost in /etc/hosts
+#
+# Revision 1.9  2023-06-28 23:23:18+05:30  Cprogrammer
+# use timeout for nc command
+#
+# Revision 1.8  2023-06-28 21:35:40+05:30  Cprogrammer
+# use /proc/loadavg instead of uptime command for consistent output
+#
 # Revision 1.7  2023-06-28 12:34:27+05:30  Cprogrammer
 # send startup/shutdown text to lcdhost
 #

@@ -31,6 +31,12 @@ Release 1.1 Start 30/06/2022 End --/--/----
 19. pistopstart: send startup/shutdown text to lcdhost running lcdDaemon from
     lcd-daemon package
 20. create_service: execute $HOME/.pistop/pistopstart in shutdown script
+21. pistopstart: use /proc/loadavg instead of uptime command
+22. pistopstart: use timeout for nc command
+- 29/06/2023
+23. pistopstart: use LCD_HOST if defined instead of lcdhost from /etc/hosts
+24. create_service: added --lcdhost, --lcdport to create LCD_HOST, LCD_PORT
+    env variables
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022
