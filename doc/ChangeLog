@@ -37,6 +37,10 @@ Release 1.1 Start 30/06/2022 End --/--/----
 23. pistopstart: use LCD_HOST if defined instead of lcdhost from /etc/hosts
 24. create_service: added --lcdhost, --lcdport to create LCD_HOST, LCD_PORT
     env variables
+- 30/06/2023
+25. create_service: added --lcdfifo to create LCD_FIFO env variable
+26. host_status: script to send text to LCD display
+27. pistopstart: use host_status to send text to LCD display
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022

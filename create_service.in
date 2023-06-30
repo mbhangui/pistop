@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.56 2023-06-29 17:37:17+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.57 2023-06-30 17:20:43+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -138,9 +138,20 @@ add_service()
 		chown -R $t_uid:$t_gid $home/.pistop
 		check_update_if_diff $servicedir/$service_name/variables/HOST       $host
 		check_update_if_diff $servicedir/$service_name/variables/PORT       $port
-		check_update_if_diff $servicedir/$service_name/variables/LCD_HOST   $lcdhost
-		check_update_if_diff $servicedir/$service_name/variables/LCD_PORT   $lcdport
-		check_update_if_diff $servicedir/$service_name/variables/TIMEOUT    300
+		if [ -n "$lcdfifo" ] ; then
+			> $servicedir/$service_name/variables/LCD_HOST
+			> $servicedir/$service_name/variables/LCD_PORT
+			check_update_if_diff $servicedir/$service_name/variables/LCD_FIFO   $lcdfifo
+		elif [ -n "$lcdhost" -a -n "$lcdport" ] ; then
+			> $servicedir/$service_name/variables/LCD_FIFO
+			check_update_if_diff $servicedir/$service_name/variables/LCD_HOST   $lcdhost
+			check_update_if_diff $servicedir/$service_name/variables/LCD_PORT   $lcdport
+		else
+			> $servicedir/$service_name/variables/LCD_FIFO
+			> $servicedir/$service_name/variables/LCD_HOST
+			> $servicedir/$service_name/variables/LCD_PORT
+		fi
+		check_update_if_diff $servicedir/$service_name/variables/TIMEOUT    60
 		check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
 		check_update_if_diff $servicedir/$service_name/variables/USER      "root"
 		check_update_if_diff $servicedir/$service_name/variables/HOME       $home
@@ -162,8 +173,19 @@ add_service()
 		# HOST PORT USER MAXDAEMONS MDRIVE
 		check_update_if_diff $servicedir/$service_name/variables/HOST       $host
 		check_update_if_diff $servicedir/$service_name/variables/PORT       $port
-		check_update_if_diff $servicedir/$service_name/variables/LCD_HOST   $lcdhost
-		check_update_if_diff $servicedir/$service_name/variables/LCD_PORT   $lcdport
+		if [ -n "$lcdfifo" ] ; then
+			> $servicedir/$service_name/variables/LCD_HOST
+			> $servicedir/$service_name/variables/LCD_PORT
+			check_update_if_diff $servicedir/$service_name/variables/LCD_FIFO   $lcdfifo
+		elif [ -n "$lcdhost" -a -n "$lcdport" ] ; then
+			> $servicedir/$service_name/variables/LCD_FIFO
+			check_update_if_diff $servicedir/$service_name/variables/LCD_HOST   $lcdhost
+			check_update_if_diff $servicedir/$service_name/variables/LCD_PORT   $lcdport
+		else
+			> $servicedir/$service_name/variables/LCD_FIFO
+			> $servicedir/$service_name/variables/LCD_HOST
+			> $servicedir/$service_name/variables/LCD_PORT
+		fi
 		check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
 		check_update_if_diff $servicedir/$service_name/variables/USER      "$user"
 		check_update_if_diff $servicedir/$service_name/variables/UID       "$t_uid"
@@ -308,6 +330,8 @@ add_service()
 		echo "  if [ \$? -ne 0 ] ; then"
 		echo "    systemctl start mpd"
 		echo "  fi"
+		echo ""
+		echo "  @pistoplibexecdir@/host_status \\\"3 0 3:\$(uname -n) PowerOn\\\""
 		echo ""
 		echo "  exec /usr/bin/tcpserver -vDHRo -l 0 \\"
 		echo "    -c variables/MAXDAEMONS -b \\\$MAXDAEMONS \\"
@@ -470,7 +494,7 @@ usage()
 	echo "USAGE: create_service --servicedir=path\\"
 	echo "  --service_name=fclient|fserver\\"
 	echo "  --user=username --host=host --port=port\\"
-	echo "  --lcdhost=host --lcdport=port\\"
+	echo "  --lcdhost=host --lcdport=port || --lcdfifo=fifo\\"
 	echo "  --add-service"
 	echo " or"
 	echo "USAGE: create_service --servicedir=path\\"
@@ -495,11 +519,14 @@ fi
 logdir=/var/log/svc
 servicedir=@servicedir@
 user=""
+lcdhost=""
+lcdport=""
+lcdfifo=""
 prog_args="$0 $*"
 SYSTEM=$(uname -s)
 music_dir=$(get_mpd_conf_value music_dir)
 MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.56 2023-06-29 17:37:17+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.57 2023-06-30 17:20:43+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -533,6 +560,9 @@ while test $# -gt 0; do
 	--lcdport=*)
 	lcdport=$optarg
 	;;
+	--lcdfifo=*)
+	lcdfifo=$optarg
+	;;
 
 	--add-service)
 	if [ -z "$servicedir" -o -z "$service_name" ] ; then
@@ -562,6 +592,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.57  2023-06-30 17:20:43+05:30  Cprogrammer
+# added --lcdhost argument
+#
 # Revision 1.56  2023-06-29 17:37:17+05:30  Cprogrammer
 # added --lcdhost, --lcdport to create LCD_HOST, LCD_PORT env variables
 #

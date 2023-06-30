@@ -84,6 +84,7 @@ install -m 0644 %{name}-rpm.info %{buildroot}%{sysconfdir}/%{name}/%{name}-rpm.i
 %attr(755,root,root)                    %{_prefix}/libexec/%{name}/pistopclient
 %attr(755,root,root)                    %{_prefix}/libexec/%{name}/pistopserver
 %attr(755,root,root)                    %{_prefix}/libexec/%{name}/pistopstart
+%attr(755,root,root)                    %{_prefix}/libexec/%{name}/host_status
 %attr(755,root,root)                    %{_prefix}/libexec/%{name}/backup
 %attr(755,root,root)                    %{_prefix}/libexec/%{name}/create_service
 %attr(644,root,root)                    %{sysconfdir}/%{name}/%{name}-release

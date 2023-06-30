@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.11 2023-06-29 22:45:10+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.12 2023-06-30 10:08:09+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -76,24 +76,10 @@ stop()
 			fi
 		done
 	fi
-	if [ -x /usr/bin/nc ] ; then
-		if [ -n "$LCD_HOST" ] ; then
-			lcdhost=$LCD_HOST
-		else
-			lcdhost=$(grep lcdhost /etc/hosts|awk '{print $1}')
-		fi
-		if [ -n "$lcdhost" ] ; then
-			echo "Sending shutdown text to $lcdhost"
-			if [ -z "$LCD_PORT" ] ; then
-				LCD_PORT=1806
-			fi
-			if [ -n "$POWER_OFF" ] ; then
-				echo "3 0 3:$(uname -n) PowerOff" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
-			else
-				echo "3 0 3:$(uname -n) Off" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
-			fi
-			sleep 1
-		fi
+	if [ -n "$POWER_OFF" ] ; then
+		host_status "3 0 3:$(uname -n) PowerOff"
+	else
+		host_status "3 0 3:$(uname -n) Off"
 	fi
 	echo "Completed STOP Service"
 	if [ -n "$POWER_OFF" ] ; then
@@ -181,28 +167,7 @@ start()
 		sleep 20
 		count=`expr $count + 1`
 	done
-	if [ -x /usr/bin/nc ] ; then
-		if [ -n "$LCD_HOST" ] ; then
-			lcdhost=$LCD_HOST
-		else
-			lcdhost=$(grep lcdhost /etc/hosts|awk '{print $1}')
-		fi
-		if [ -n "$lcdhost" ] ; then
-			echo "Sending startup text to $lcdhost"
-			if [ -z "$LCD_PORT" ] ; then
-				LCD_PORT=1806
-			fi
-			load=$(cat /proc/loadavg|awk '{print $1" "$2" "$3}')
-			echo "0 0 3:Load $load" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
-			sleep 1
-			echo "1 0 0:$(hostname -I)" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
-			sleep 1
-			echo "2 0 0:$(date +"%d-%m-%y %H:%M:%S")" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
-			sleep 1
-			echo "3 0 0:$(uname -n) On" | /usr/bin/nc -w 1 -u $lcdhost $LCD_PORT
-			sleep 1
-		fi
-	fi
+	host_status load
 	if [ -x $MDRIVE/bin/boot_sound ] ; then
 		$MDRIVE/bin/boot_sound >/dev/null 2>&1
 	fi
@@ -264,6 +229,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.12  2023-06-30 10:08:09+05:30  Cprogrammer
+# send text to LCD display using host_status script
+#
 # Revision 1.11  2023-06-29 22:45:10+05:30  Cprogrammer
 # updated text message sent to lcdhost
 #

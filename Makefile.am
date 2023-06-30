@@ -14,7 +14,7 @@ pistoplibexecdir=@libexecdir@/pistop
 pistopsysconfdir=@sysconfdir@/pistop
 
 pistoplibexec_PROGRAMS = pistopclient$(EXEEXT) pistopserver$(EXEEXT)
-pistoplibexec_SCRIPTS = create_service backup pistopstart
+pistoplibexec_SCRIPTS = create_service backup pistopstart host_status
 noinst_DATA = pistop.spec PKGBUILD
 pistopsysconf_DATA=pistop-release
 doc_DATA=README.md COPYING pistop.changes
@@ -26,7 +26,7 @@ pistopserver_LDADD = $(LIB_QMAIL)
 pistopclient_SOURCES = pistopclient.c
 pistopclient_LDADD = $(LIB_QMAIL)
 
-MOSTLYCLEANFILES = create_services pistopstart pistopserver.1
+MOSTLYCLEANFILES = create_services pistopstart host_status pistopserver.1
 
 edit = sed \
 	-e 's}@PACKAGE\@}$(PACKAGE)}g' \
@@ -51,6 +51,9 @@ pistopstart: pistopstart.in
 	$(edit) $@.in > $@
 	chmod +x $@
 backup: backup.in
+	$(edit) $@.in > $@
+	chmod +x $@
+host_status: host_status.in
 	$(edit) $@.in > $@
 	chmod +x $@
 pistopserver.1: pistopserver.9
