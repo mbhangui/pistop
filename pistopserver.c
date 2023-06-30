@@ -1,5 +1,9 @@
 /*
- * $Log: server.c,v $
+ * $Log: pistopserver.c,v $
+ * Revision 1.7  2023-06-30 23:08:32+05:30  Cprogrammer
+ * display remoteip
+ * fixed shutdown
+ *
  * Revision 1.6  2021-04-27 18:33:09+05:30  Cprogrammer
  * removed unused variable pid
  *
@@ -163,7 +167,7 @@ main(int argc, char **argv)
 				strerr_die2sys(111, FATAL, "write: ");
 #endif
 			if (!str_diffn(buffer, "shutdown", 8)) {
-				execl("/sbin/shutdown", "-h", "now", (char *) 0);
+				execl("/sbin/shutdown", "shutdown", "-h", "now", (char *) 0);
 				strerr_die2sys(111, FATAL, "execl: /sbin/shutdown -h now: ");
 			} else
 			if (!str_diffn(buffer, "quit", 4)) {
