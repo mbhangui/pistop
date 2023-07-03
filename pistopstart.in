@@ -77,9 +77,9 @@ stop()
 		done
 	fi
 	if [ -n "$POWER_OFF" ] ; then
-		host_status "3 0 3:$(uname -n) PowerOff"
+		@pistoplibexecdir@/host_status "3 0 3:$(uname -n) PowerOff"
 	else
-		host_status "3 0 3:$(uname -n) Off"
+		@pistoplibexecdir@/host_status "3 0 3:$(uname -n) Off"
 	fi
 	echo "Completed STOP Service"
 	if [ -n "$POWER_OFF" ] ; then
@@ -167,7 +167,7 @@ start()
 		sleep 20
 		count=`expr $count + 1`
 	done
-	host_status load
+	@pistoplibexecdir@/host_status load
 	if [ -x $MDRIVE/bin/boot_sound ] ; then
 		$MDRIVE/bin/boot_sound >/dev/null 2>&1
 	fi
