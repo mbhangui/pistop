@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.12 2023-06-30 10:08:09+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.13 2023-07-04 16:12:54+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -43,8 +43,17 @@ stop()
 		count=1
 		while true
 		do
-			umount $MDRIVE >/dev/null 2>&1
+			if [ -n "$POWER_OFF" ] ; then
+				umount -f -l $MDRIVE >/dev/null 2>&1
+			else
+				umount -f $MDRIVE >/dev/null 2>&1
+			fi
 			if [ $? -eq 0 -o $count -eq 60 ] ; then
+				if [ $? -eq 0 ] ; then
+					printf "umount: %2d: succeeded\n" $count
+				else
+					printf "umount: %2d: threshold exceeded. Quitting without umount\n" $count
+				fi
 				break
 			fi
 			drive_mounted=$(df -k |grep MDrive)
@@ -52,6 +61,7 @@ stop()
 				echo "unmounted MDrive"
 				break
 			fi
+			printf "umount: %2d: failed\n" $count
 			count=`expr $count + 1`
 			sleep 1
 		done
@@ -229,6 +239,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.13  2023-07-04 16:12:54+05:30  Cprogrammer
+# use umount -f -l to prevent umount hanging
+#
 # Revision 1.12  2023-06-30 10:08:09+05:30  Cprogrammer
 # send text to LCD display using host_status script
 #
