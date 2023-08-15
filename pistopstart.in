@@ -128,7 +128,7 @@ start()
 			fi
 		fi
 		if [ ! -f $MDRIVE/data/stats.db ] ; then
-			echo "MDrive [$MDrive] not yet mounted"
+			echo "MDrive [$MDRIVE] not yet mounted"
 			sleep 5
 			continue
 		fi
