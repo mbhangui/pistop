@@ -1,5 +1,8 @@
 /*
  * $Log: pistopclient.c,v $
+ * Revision 1.3  2024-01-29 09:51:15+05:30  Cprogrammer
+ * remove double newline
+ *
  * Revision 1.2  2023-06-28 12:34:04+05:30  Cprogrammer
  * added more info messages
  *
@@ -293,11 +296,11 @@ main(int argc, char **argv)
 				_exit(0);
 			} 
 			if (substdio_put(subfderr, "got command [", 13) == -1 ||
-					substdio_put(subfderr, buffer, length) == -1 ||
+					substdio_put(subfderr, buffer, length - 1) == -1 ||
 					substdio_put(subfderr, "]\n", 2) == -1 || substdio_flush(subfderr))
 				die_write();
 			if (!str_diffn(buffer, "shutdown\n", 9)) {
-				out("remote powered off executing ");
+				out("remote powered off. Executing ");
 				out(pistopstart.s);
 				out(" stop\n");
 				flush();
