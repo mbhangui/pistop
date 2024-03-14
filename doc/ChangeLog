@@ -44,6 +44,9 @@ Release 1.1 Start 30/06/2022 End --/--/----
 28. pistopserver.c: fixed shutdown
 - 04/07/2023
 29. pistopstart.in: Use umount -f -l to prevent hanging
+- 14/03/2024
+30. backup.in: transfer files with original directory into dest
+31. create_services.in: added more packages to UPGRADE env variable
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022

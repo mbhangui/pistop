@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.57 2023-06-30 17:20:43+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.58 2024-03-14 16:35:21+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -211,7 +211,10 @@ add_service()
 		fi
 		if [ ! -f $servicedir/$service_name/variables/UPGRADE ] ; then
 			check_update_if_diff $servicedir/$service_name/variables/UPGRADE \
-				"ucspi-tcp mpdev libqmail indimail-mini daemontools pistop mpd"
+				"ucspi-tcp mpdev libqmail libdkim2 libsrs2 indimail-mini daemontools pistop mpd" \
+				"upmpdcli upmpdcli-config upmpdcli-radios libnpupnp1 libnpupnp1-dev libupnpp6" \
+				"libupnpp6-dev raspotify"
+
 		fi
 		if [ ! -f $servicedir/$service_name/variables/INTERVAL ] ; then
 			check_update_if_diff $servicedir/$service_name/variables/INTERVAL 21600
@@ -526,7 +529,7 @@ prog_args="$0 $*"
 SYSTEM=$(uname -s)
 music_dir=$(get_mpd_conf_value music_dir)
 MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.57 2023-06-30 17:20:43+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.58 2024-03-14 16:35:21+05:30 Cprogrammer Exp mbhangui $"
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -592,6 +595,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.58  2024-03-14 16:35:21+05:30  Cprogrammer
+# added more packages to UPGRADE env variable
+#
 # Revision 1.57  2023-06-30 17:20:43+05:30  Cprogrammer
 # added --lcdhost argument
 #

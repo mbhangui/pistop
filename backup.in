@@ -1,5 +1,40 @@
 #!/bin/sh
+#
+# $Id: backup.in,v 1.7 2024-03-14 16:34:46+05:30 Cprogrammer Exp mbhangui $
+#
+HOST=$(uname -n)
+if [ -z "$DEST" ] ; then
+	exit 0
+fi
+if [ ! -d $DEST/backup ] ; then
+	echo "$DEST/backup doesn't exist" 1>&2
+	exit 1
+fi
+if [ -n "$BACKUP" -a -n "$DEST" ] ; then
+	if [ ! -d $DEST/backup/$HOST ] ; then
+		mkdir -p $DEST/backup/$HOST
+		if [ $? -ne 0 ] ; then
+			exit 1
+		fi
+	fi
+	for i in $BACKUP
+	do
+		d=$(dirname $i)
+		if [ ! -d $DEST/backup/$HOST"$d" ] ; then
+			mkdir -p $DEST/backup/$HOST"$d"
+		fi
+		rsync -valptgomHE --delete $i $DEST/backup/$HOST"$d"
+	done
+fi
+exit 0
+#
 # $Log: backup.in,v $
+# Revision 1.7  2024-03-14 16:34:46+05:30  Cprogrammer
+# transfer files with original directory into dest
+#
+# Revision 1.7  2024-03-08 19:49:17+05:30  Cprogrammer
+# transfer files with original directory into dest
+#
 # Revision 1.6  2022-06-30 01:27:55+05:30  Cprogrammer
 # exit if DEST is not set
 #
@@ -18,24 +53,3 @@
 # Revision 1.1  2020-08-31 22:55:51+05:30  Cprogrammer
 # Initial revision
 #
-#
-# $Id: backup.in,v 1.6 2022-06-30 01:27:55+05:30 Cprogrammer Exp mbhangui $
-#
-HOST=$(uname -n)
-if [ -z "$DEST" ] ; then
-	exit 0
-fi
-if [ ! -d $DEST/backup ] ; then
-	echo "$DEST/backup doesn't exist" 1>&2
-	exit 1
-fi
-if [ -n "$BACKUP" -a -n "$DEST" ] ; then
-	if [ ! -d $DEST/backup/$HOST ] ; then
-		mkdir -p $DEST/backup/$HOST
-		if [ $? -ne 0 ] ; then
-			exit 1
-		fi
-	fi
-	exec rsync -valptgomHE --delete $BACKUP $DEST/backup/$HOST
-fi
-exit 0
