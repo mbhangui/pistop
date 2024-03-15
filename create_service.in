@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.58 2024-03-14 16:35:21+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.59 2024-03-15 12:10:40+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -155,9 +155,13 @@ add_service()
 		check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
 		check_update_if_diff $servicedir/$service_name/variables/USER      "root"
 		check_update_if_diff $servicedir/$service_name/variables/HOME       $home
-		check_update_if_diff $servicedir/$service_name/variables/MDRIVE     $MDRIVE
-		if [ -d $MDRIVE/backup ] ; then
-			check_update_if_diff $servicedir/$service_name/variables/DEST "$MDRIVE"
+		if [ -n "$MDRIVE" ] ; then
+			check_update_if_diff $servicedir/$service_name/variables/MDRIVE     $MDRIVE
+			if [ -d $MDRIVE/backup ] ; then
+				check_update_if_diff $servicedir/$service_name/variables/DEST "$MDRIVE"
+			fi
+		else
+			> $servicedir/$service_name/variables/MDRIVE
 		fi
 	elif [ "$service_name" = "fserver" ] ; then
 		mkdir -p $home/.pistop
@@ -190,9 +194,13 @@ add_service()
 		check_update_if_diff $servicedir/$service_name/variables/USER      "$user"
 		check_update_if_diff $servicedir/$service_name/variables/UID       "$t_uid"
 		check_update_if_diff $servicedir/$service_name/variables/GID       "$t_gid"
-		check_update_if_diff $servicedir/$service_name/variables/MDRIVE     $MDRIVE
-		if [ -d $MDRIVE/backup ] ; then
-			check_update_if_diff $servicedir/$service_name/variables/DEST "$MDRIVE"
+		if [ -n "$MDRIVE" ] ; then
+			check_update_if_diff $servicedir/$service_name/variables/MDRIVE     $MDRIVE
+			if [ -d $MDRIVE/backup ] ; then
+				check_update_if_diff $servicedir/$service_name/variables/DEST "$MDRIVE"
+			fi
+		else
+			> $servicedir/$service_name/variables/MDRIVE
 		fi
 	elif [ "$service_name" = "rsync.875" ] ; then
 		if [ "$SYSTEM" != "Linux" ] ; then
@@ -498,6 +506,7 @@ usage()
 	echo "  --service_name=fclient|fserver\\"
 	echo "  --user=username --host=host --port=port\\"
 	echo "  --lcdhost=host --lcdport=port || --lcdfifo=fifo\\"
+	echo "  --mdrive=mpd drive\\"
 	echo "  --add-service"
 	echo " or"
 	echo "USAGE: create_service --servicedir=path\\"
@@ -527,9 +536,10 @@ lcdport=""
 lcdfifo=""
 prog_args="$0 $*"
 SYSTEM=$(uname -s)
-music_dir=$(get_mpd_conf_value music_dir)
-MDRIVE=$(dirname $music_dir)
-RCSID="# \$Id: create_service.in,v 1.58 2024-03-14 16:35:21+05:30 Cprogrammer Exp mbhangui $"
+MDRIVE=""
+RCSID="# \$Id: create_service.in,v 1.59 2024-03-15 12:10:40+05:30 Cprogrammer Exp mbhangui $"
+
+[ -f /etc/mpd.conf ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
 while test $# -gt 0; do
 	case "$1" in
 	-*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'`
@@ -547,6 +557,9 @@ while test $# -gt 0; do
 	if [ "$service_name" != "fclient" -a "$service_name" != "fserver" -a "$service_name" != "update" -a "$service_name" != "rsync" ] ; then
 		echo "service_name should be fclient, fserver, rsync or update" 1>&2
 	fi
+	;;
+	--mdrive=*)
+	MDRIVE=$optarg
 	;;
     --user=*)
     user=$optarg
@@ -576,6 +589,13 @@ while test $# -gt 0; do
 			echo "You must specify port, host for $service_name" 1>&2
 			usage 1
 		fi
+		if [ -z "$MDRIVE" ] ; then
+			[ -n "$music_dir" ] && MDRIVE=$(dirname $music_dir) || MDRIVE=""
+			if [ -z "$MDRIVE" ] ; then
+				echo "MDRIVE not set for $service_name" 1>&2
+				usage 1
+			fi
+		fi
 	elif [ "$service_name" != "rsync" -a -z "$user" ] ; then
 		echo "UNIX user not specified" 1>&2
 		usage 1
@@ -595,6 +615,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.59  2024-03-15 12:10:40+05:30  Cprogrammer
+# modified for config without mpd
+#
 # Revision 1.58  2024-03-14 16:35:21+05:30  Cprogrammer
 # added more packages to UPGRADE env variable
 #

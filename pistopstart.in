@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.13 2023-07-04 16:12:54+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.14 2024-03-15 12:11:01+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -16,34 +16,45 @@ suicide()
 
 get_mpd_conf_value()
 {
+	if [ ! -f /etc/mpd.conf ] ; then
+		return 1
+	fi
     grep "^$1" @sysconfdir@/mpd.conf|awk '{print $2}' | \
     sed -e 's{"{{g'
 }
 
 stop()
 {
-	while true
-	do
-		echo "Stopping mpd.service"
-		if [ -n $systemctl ] ; then
-			$systemctl stop mpd.service mpd.socket
-		elif [ -d $servicedir/mpd ] ; then
-			svc -d $servicedir/mpd
-		else
-			break
-		fi
-		if [ $? -eq 0 ] ; then
-			echo "stopped mpd"
-			break
-		fi
-	done
+	if [ -n "$POWER_OFF" ] ; then
+		echo "Shutting down $(uname -n) localtime $(date)" 1>&7
+	else
+		echo "stopping $(uname -n) localtime $(date)" 1>&7
+	fi
+	if [ $mpd_present -eq 1 ] ; then
+		count=1
+		while true
+		do
+			echo "Stopping mpd.service"
+			if [ -n $systemctl ] ; then
+				$systemctl stop mpd.service mpd.socket
+			elif [ -d $servicedir/mpd ] ; then
+				svc -d $servicedir/mpd
+			else
+				break
+			fi
+			[ $? -eq 0 ] && break
+			printf "stop mpd: %2d: failed\n" $count
+			count=`expr $count + 1`
+			sleep 1
+		done
+	fi
 	# MDrive on RPI has the directory sounds
-	if [ -d $MDRIVE/sounds ] ; then
+	if [ -n "$MDRIVE" -a -d $MDRIVE/sounds ] ; then
 		echo "Unmounting MDrive"
 		count=1
 		while true
 		do
-			if [ -n "$POWER_OFF" ] ; then
+			if [ -n "$POWER_OFF" -a -n "$FORCE_UMOUNT" ] ; then
 				umount -f -l $MDRIVE >/dev/null 2>&1
 			else
 				umount -f $MDRIVE >/dev/null 2>&1
@@ -93,9 +104,55 @@ stop()
 	fi
 	echo "Completed STOP Service"
 	if [ -n "$POWER_OFF" ] ; then
+		echo "shutdown $(uname -n) localtime $(date)" 1>&7
 		echo "shutdown -h now"
 		shutdown -h now
+	else
+		echo "stopped $(uname -n) localtime $(date)" 1>&7
 	fi
+}
+
+start_mpd()
+{
+	mpd_up=0
+	if [ -x $systemctl ] ; then
+		$systemctl status mpd.service >/dev/null 2>&1
+		if [ $? -ne 0 ] ; then
+			# trigger autofs to mount MDrive
+			mpd_was_down=1
+			echo "starting music player daemon"
+			$systemctl start mpd.service
+		else
+			mpd_up=1
+			if [ $mpd_was_down -eq 1 ] ; then
+				echo "started music player daemon"
+				mpd_was_down=0
+			fi
+		fi
+	else
+		svstat $servicedir/mpd >/dev/null 2>&1
+		if [ $? -ne 0 ] ; then
+			# trigger autofs to mount MDrive
+			mpd_was_down=1
+			echo "starting music player daemon"
+			svc -u $servicedir/mpd
+		else
+			mpd_up=1
+			if [ $mpd_was_down -eq 1 ] ; then
+				echo "started music player daemon"
+				mpd_was_down=0
+			fi
+		fi
+	fi
+	[ $mpd_up -eq 1 ] && return 0 || return 1
+}
+
+give_up()
+{
+	echo "Giving up..."
+	svc -dx /service/fclient
+	$systemctl stop autofs
+	umount $MDRIVE
 }
 
 start()
@@ -106,7 +163,7 @@ start()
 	mpd_was_down=0
 	autofs_was_down=0
 	mdrive_mounted=0
-	echo "Initializing $(uname -n) localtime $(date)" 1>&7
+	echo "Initializing $(uname -n) localtime $(date)" 1>&7 # running under tcpclient
 	while true
 	do
 		# 1. we assume we are running on Linux mostly
@@ -114,6 +171,11 @@ start()
 		if [ -x $systemctl ] ; then
 			$systemctl status autofs.service >/dev/null 2>&1
 			if [ $? -ne 0 ] ; then
+				if [ $count -eq 60 ] ; then
+					give_up
+					break
+				fi
+				count=`expr $count + 1`
 				autofs_was_down=1
 				echo "starting automount filesystems"
 				$systemctl start autofs.service
@@ -128,59 +190,28 @@ start()
 			fi
 		fi
 		if [ ! -f $MDRIVE/data/stats.db ] ; then
+			if [ $count -eq 60 ] ; then
+				give_up
+				break
+			fi
+			count=`expr $count + 1`
 			echo "MDrive [$MDRIVE] not yet mounted"
 			sleep 5
 			continue
 		fi
-		if [ $mdrive_mounted -eq 0 ] ; then
-			mdrive_mounted=1
-			echo "MDrive mounted"
-		fi
-		if [ -x $systemctl ] ; then
-			$systemctl status mpd.service >/dev/null 2>&1
-			if [ $? -ne 0 ] ; then
-				# trigger autofs to mount MDrive
-				mpd_was_down=1
-				echo "starting music player daemon"
-				$systemctl start mpd.service
-			else
-				mpd_up=1
-				if [ $mpd_was_down -eq 1 ] ; then
-					echo "started music player daemon"
-					mpd_was_down=0
-				fi
-			fi
-			[ $mpd_up -eq 1 ] && [ $autofs_up -eq 1 ] && break
+		[ $mdrive_mounted -eq 0 ] && mdrive_mounted=1 && echo "MDrive mounted"
+		if [ $mpd_present -eq 1 ] ; then
+			start_mpd
+			[ $? -eq 0 ] && break
 		else
-			svstat $servicedir/mpd >/dev/null 2>&1
-			if [ $? -ne 0 ] ; then
-				# trigger autofs to mount MDrive
-				mpd_was_down=1
-				echo "starting music player daemon"
-				svc -u $servicedir/mpd
-			else
-				mpd_up=1
-				if [ $mpd_was_down -eq 1 ] ; then
-					echo "started music player daemon"
-					mpd_was_down=0
-				fi
-			fi
-			[ $mpd_up -eq 1 ] && break
-		fi
-		if [ $count -eq 60 ] ; then
-			echo "Giving up..."
-			svc -dx /service/fclient
-			$systemctl stop autofs
-			umount $MDRIVE
 			break
 		fi
+		[ $count -eq 60 ] && give_up && break
 		sleep 20
 		count=`expr $count + 1`
 	done
 	@pistoplibexecdir@/host_status load
-	if [ -x $MDRIVE/bin/boot_sound ] ; then
-		$MDRIVE/bin/boot_sound >/dev/null 2>&1
-	fi
+	[ -x $MDRIVE/bin/boot_sound ] && $MDRIVE/bin/boot_sound >/dev/null 2>&1
 	if [ -n "DEST" -a -n "$BACKUP" -a -d $MDRIVE/backup ] ; then
 		echo "backing up configuraton"
 		@pistoplibexecdir@/backup
@@ -196,9 +227,11 @@ start()
 	else
 		echo "sound.service not needed to be loaded"
 	fi
+	echo "Initialized  $(uname -n) localtime $(date)" 1>&7 # running under tcpclient
 	echo "Completed START Service"
 }
 
+## Main ###
 trap suicide TERM INT
 if [ -n "$TCPREMOTEIP" ] ; then
 	if [ $# -gt 0 ] ; then
@@ -214,14 +247,18 @@ else
 	fi
 fi
 servicedir=@servicedir@
-music_dir=$(get_mpd_conf_value music_dir)
-t=$(dirname $music_dir)
-if [ -n "$t" ] ; then
-	MDRIVE=$t
-	echo "MDrive from mpd.conf is $MDRIVE"
-else
-	echo "MDrive variable set is $MDRIVE"
+[ -f /etc/mpd.conf ] && mpd_present=1 || mpd_present=0
+[ $mpd_present -eq 1 ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
+if [ -n "$music_dir" ] ; then
+	MDRIVE=$(dirname $music_dir) 
+elif [ -d /MDrive ] ; then
+	MDRIVE=/MDrive
+elif [ -d /var/lib/mpd/MDrive/backup ] ; then
+	MDRIVE=/var/lib/mpd/MDrive
+elif [ -d /home/pi/MDrive/backup ] ; then
+	MDRIVE=/home/pi/MDrive
 fi
+[ -n "$MDRIVE" ] && echo "MDrive is $MDRIVE" || echo "MDrive not found"
 
 case "$1" in
 	start)
@@ -239,6 +276,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.14  2024-03-15 12:11:01+05:30  Cprogrammer
+# modified for config without mpd
+#
 # Revision 1.13  2023-07-04 16:12:54+05:30  Cprogrammer
 # use umount -f -l to prevent umount hanging
 #
