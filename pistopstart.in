@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.14 2024-03-15 12:11:01+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.15 2024-03-21 23:40:03+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -50,20 +50,25 @@ stop()
 	fi
 	# MDrive on RPI has the directory sounds
 	if [ -n "$MDRIVE" -a -d $MDRIVE/sounds ] ; then
-		echo "Unmounting MDrive"
 		count=1
 		while true
 		do
 			if [ -n "$POWER_OFF" -a -n "$FORCE_UMOUNT" ] ; then
+				if [ $count -eq 1 ] ; then
+					echo "Force Unmounting MDrive with lazy option"
+				fi
 				umount -f -l $MDRIVE >/dev/null 2>&1
 			else
+				if [ $count -eq 1 ] ; then
+					echo "Force Unmounting MDrive"
+				fi
 				umount -f $MDRIVE >/dev/null 2>&1
 			fi
 			if [ $? -eq 0 -o $count -eq 60 ] ; then
 				if [ $? -eq 0 ] ; then
 					printf "umount: %2d: succeeded\n" $count
 				else
-					printf "umount: %2d: threshold exceeded. Quitting without umount\n" $count
+					printf "WARNING!!! umount: %2d: threshold exceeded. Quitting without umount\n" $count
 				fi
 				break
 			fi
@@ -276,6 +281,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.15  2024-03-21 23:40:03+05:30  Cprogrammer
+# display umount method in logs
+#
 # Revision 1.14  2024-03-15 12:11:01+05:30  Cprogrammer
 # modified for config without mpd
 #

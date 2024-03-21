@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.59 2024-03-15 12:10:40+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.59 2024-03-21 23:42:08+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -322,6 +322,7 @@ add_service()
 		echo "fi"
 		) > $servicedir/$service_name/shutdown
 		chmod +x $servicedir/$service_name/shutdown
+		echo 1 > $servicedir/$service_name/variables/FORCE_UMOUNT
 		if [ ! -f $servicedir/$service_name/variables/POWER_OFF ] ; then
 			> $servicedir/$service_name/variables/POWER_OFF
 		fi
@@ -537,7 +538,7 @@ lcdfifo=""
 prog_args="$0 $*"
 SYSTEM=$(uname -s)
 MDRIVE=""
-RCSID="# \$Id: create_service.in,v 1.59 2024-03-15 12:10:40+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.59 2024-03-21 23:42:08+05:30 Cprogrammer Exp mbhangui $"
 
 [ -f /etc/mpd.conf ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
 while test $# -gt 0; do
@@ -615,8 +616,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
-# Revision 1.59  2024-03-15 12:10:40+05:30  Cprogrammer
-# modified for config without mpd
+# Revision 1.59  2024-03-21 23:42:08+05:30  Cprogrammer
+# work without mpd
+# create FORCE_UMOUNT variable
 #
 # Revision 1.58  2024-03-14 16:35:21+05:30  Cprogrammer
 # added more packages to UPGRADE env variable
