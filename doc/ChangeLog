@@ -52,6 +52,9 @@ Release 1.1 Start 30/06/2022 End --/--/----
 - 21/03/2024
 33. create_services: Create FORCE_UMOUNT env variable
 34. pistopstart: Display umount method in log
+- 23/03/2024
+34. host_status.in: add delay when resetting LCD display
+35. host_status.in: eliminate duplicate ip addresses
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022
