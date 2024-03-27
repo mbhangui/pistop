@@ -55,6 +55,9 @@ Release 1.1 Start 30/06/2022 End --/--/----
 - 23/03/2024
 34. host_status.in: add delay when resetting LCD display
 35. host_status.in: eliminate duplicate ip addresses
+- 27/03/2024
+36. pistopstart: umount MDrive without triggering autofs
+37. pistopstart: ignore sigpipe
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022

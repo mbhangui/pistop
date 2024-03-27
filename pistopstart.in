@@ -1,15 +1,12 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.15 2024-03-21 23:40:03+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.16 2024-03-27 09:44:56+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
 
 suicide()
 {
-	if [ -n "$CAT_PID" ] ; then
-		kill $CAT_PID 2>/dev/null
-	fi
 	echo "ARGH!!! Committing suicide. Going down on SIGTERM"
 	exit 1
 }
@@ -48,8 +45,7 @@ stop()
 			sleep 1
 		done
 	fi
-	# MDrive on RPI has the directory sounds
-	if [ -n "$MDRIVE" -a -d $MDRIVE/sounds ] ; then
+	if [ -n "$MDRIVE" ] ; then
 		count=1
 		while true
 		do
@@ -107,13 +103,13 @@ stop()
 	else
 		@pistoplibexecdir@/host_status "3 0 3:$(uname -n) Off"
 	fi
-	echo "Completed STOP Service"
 	if [ -n "$POWER_OFF" ] ; then
 		echo "shutdown $(uname -n) localtime $(date)" 1>&7
-		echo "shutdown -h now"
+		echo "Completed STOP Service and shutdown in progress..."
 		shutdown -h now
 	else
 		echo "stopped $(uname -n) localtime $(date)" 1>&7
+		echo "Completed STOP Service"
 	fi
 }
 
@@ -238,6 +234,7 @@ start()
 
 ## Main ###
 trap suicide TERM INT
+trap '' PIPE
 if [ -n "$TCPREMOTEIP" ] ; then
 	if [ $# -gt 0 ] ; then
 		echo "Connected to $TCPREMOTEIP, executing $0 $*"
@@ -281,6 +278,10 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.16  2024-03-27 09:44:56+05:30  Cprogrammer
+# ignore sigpipe
+# umount MDrive without triggering autof
+#
 # Revision 1.15  2024-03-21 23:40:03+05:30  Cprogrammer
 # display umount method in logs
 #
