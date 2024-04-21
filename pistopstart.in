@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.16 2024-03-27 09:44:56+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.17 2024-04-21 23:12:32+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -99,9 +99,9 @@ stop()
 		done
 	fi
 	if [ -n "$POWER_OFF" ] ; then
-		@pistoplibexecdir@/host_status "3 0 3:$(uname -n) PowerOff"
+		@pistoplibexecdir@/host_status PowerOff
 	else
-		@pistoplibexecdir@/host_status "3 0 3:$(uname -n) Off"
+		@pistoplibexecdir@/host_status MusicOff
 	fi
 	if [ -n "$POWER_OFF" ] ; then
 		echo "shutdown $(uname -n) localtime $(date)" 1>&7
@@ -278,6 +278,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.17  2024-04-21 23:12:32+05:30  Cprogrammer
+# send PowerOff, MusicOff notification as desktop notification
+#
 # Revision 1.16  2024-03-27 09:44:56+05:30  Cprogrammer
 # ignore sigpipe
 # umount MDrive without triggering autof

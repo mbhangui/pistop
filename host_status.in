@@ -1,20 +1,21 @@
 #!/bin/sh
 #
-# $Id: host_status.in,v 1.2 2024-03-23 02:02:44+05:30 Cprogrammer Exp mbhangui $
+# $Id: host_status.in,v 1.3 2024-04-21 23:31:08+05:30 Cprogrammer Exp mbhangui $
 #
 
-set_command()
+set_command1()
 {
 	if [ -n "$LCD_FIFO" ] ; then
-		cmd="/bin/cat > $LCD_FIFO"
+		cmd1="/bin/cat > $LCD_FIFO"
 		return 0
 	elif [ -n "$LCD_HOST" ] ; then
 		if [ -z "$LCD_PORT" ] ; then
 			LCD_PORT=1806
 		fi
-		cmd="nc -w 1 -u $LCD_HOST $LCD_PORT"
+		cmd1="nc -w 1 -u $LCD_HOST $LCD_PORT"
 		return 0
 	fi
+
 	if [ -d /run ] ; then
 		lcdfifo="/run/lcd-daemon/lcdfifo"
 	elif [ -d /var/run ] ; then
@@ -23,7 +24,7 @@ set_command()
 		lcdfifo="/tmp/lcd-daemon/lcdfifo"
 	fi
 	if [ -p $lcdfifo ] ; then
-		cmd="/bin/cat > /run/lcd-daemon/lcdfifo"
+		cmd1="/bin/cat > /run/lcd-daemon/lcdfifo"
 		return 0
 	elif [  -x /usr/bin/nc ] ; then
 		if [ -n "$LCD_HOST" ] ; then
@@ -35,7 +36,47 @@ set_command()
 			LCD_PORT=1806
 		fi
 		if [ -n "$lcdhost" ] ; then
-			cmd="nc -w 1 -u $lcdhost $LCD_PORT"
+			cmd1="nc -w 1 -u $lcdhost $LCD_PORT"
+			return 0
+		fi
+	fi
+	return 1
+}
+
+set_command2()
+{
+	if [ -n "$NOTIFY_FIFO" ] ; then
+		cmd2="/bin/cat > $NOTIFY_FIFO"
+		return 0
+	elif [ -n "$NOTIFY_HOST" ] ; then
+		if [ -z "$NOTIFY_PORT" ] ; then
+			NOTIFY_PORT=1807
+		fi
+		cmd2="nc -u $NOTIFY_HOST $NOTIFY_PORT"
+		return 0
+	fi
+
+	if [ -d /run ] ; then
+		notifyfifo="/run/notify-desktop/notify-fifo"
+	elif [ -d /var/run ] ; then
+		notifyfifo="/var/run/notify-desktop/notify-fifo"
+	else
+		notifyfifo="/tmp/notify-desktop/notify-fifo"
+	fi
+	if [ -p $notifyfifo ] ; then
+		cmd2="/bin/cat > /run/notify-desktop/notify-fifo"
+		return 0
+	elif [  -x /usr/bin/nc ] ; then
+		if [ -n "$NOTIFY_HOST" ] ; then
+			notifyhost=$NOTIFY_HOST
+		else
+			notifyhost=$(grep notifyhost /etc/hosts|awk '{print $1}')
+		fi
+		if [ -z "$NOTIFY_PORT" ] ; then
+			NOTIFY_PORT=1807
+		fi
+		if [ -n "$notifyhost" ] ; then
+			cmd2="nc -u $notifyhost $NOTIFY_PORT"
 			return 0
 		fi
 	fi
@@ -46,27 +87,74 @@ if [ $# -ne 1 ] ; then
 	exit 1
 fi
 
-set_command
+set_command1
+set_command2
 case "$1" in
 	load)
-		echo "Sending load information to LCD $cmd"
+	if [ -n "$cmd1" ] ; then
+		echo "Sending load information to LCD $cmd1"
 		load=$(cat /proc/loadavg|awk '{print $1" "$2" "$3}')
-		echo "0 0 3:Load $load" | sh -c "$cmd"
+		echo "0 0 3:Load $load" | sh -c "$cmd1"
 		if [ -n "$LCD_FIFO" ] ; then
 			sleep 0.5
 		fi
-		echo "1 0 0:$(hostname -I)" | sort -u | sh -c "$cmd"
-		echo "2 0 0:$(date +"%d-%m-%y %H:%M:%S")" | sh -c "$cmd"
-		echo "3 0 0:$(uname -n) On" | sh -c "$cmd"
-		;;
+		echo "1 0 0:$(hostname -I)" | sort -u | sh -c "$cmd1"
+		echo "2 0 0:$(date +"%d-%m-%y %H:%M:%S")" | sh -c "$cmd1"
+		echo "3 0 0:$(uname -n) On" | sh -c "$cmd1"
+	fi
+	if [ -n "$cmd2" ] ; then
+		echo "Sending load information desktop notification $cmd2"
+		load=$(cat /proc/loadavg|awk '{print $1" "$2" "$3}')
+		(
+		printf "summary:host-status\n"
+		printf "body:Load $load\n" 
+		printf "body:\"$(hostname -I | sort -u)\"\n"
+		printf "body: Boot complete for %s\n" $(hostname)
+		) | sh -c "$cmd2"
+	fi
+	;;
+	PowerOff)
+	if [ -n "$cmd1" ] ; then
+		echo "3 0 3:$(uname -n) PowerOff" | sh -c "$cmd1"
+	fi
+	if [ -n "$cmd2" ] ; then
+		(
+		printf "summary:host-status\n"
+		printf "body: PowerOff %s\n" $(hostname)
+		) | sh -c "$cmd2"
+	fi
+	;;
+	MusicOff)
+	if [ -n "$cmd1" ] ; then
+		echo "3 0 3:$(uname -n) MusicOff" | sh -c "$cmd1"
+	fi
+	if [ -n "$cmd2" ] ; then
+		(
+		printf "summary:host-status\n"
+		printf "body: MusicOff %s\n" $(hostname)
+		) | sh -c "$cmd2"
+	fi
+	;;
 	*)
-		echo "Sending text to LCD $cmd"
-		echo $1 | sh -c "$cmd"
+		if [ -n "$cmd1" ] ; then
+			echo "Sending text to LCD $cmd1"
+			echo $1 | sh -c "$cmd1"
+		fi
+		if [ -n "$cmd2" ] ; then
+			echo "Sending desktop notification $cmd2"
+			(
+			printf "summary: host-status\n"
+			printf "body:$1\n"
+			) | sh -c "$cmd2"
+		fi
 		;;
 esac
 
 #
 # $Log: host_status.in,v $
+# Revision 1.3  2024-04-21 23:31:08+05:30  Cprogrammer
+# added desktop notification to notifyhost or notify-fifo
+#
 # Revision 1.2  2024-03-23 02:02:44+05:30  Cprogrammer
 # add delay when resetting LCD display
 # eliminate duplicate ip addresses

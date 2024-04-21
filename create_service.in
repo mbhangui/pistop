@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.59 2024-03-21 23:42:08+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.60 2024-04-21 23:12:22+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -151,6 +151,19 @@ add_service()
 			> $servicedir/$service_name/variables/LCD_HOST
 			> $servicedir/$service_name/variables/LCD_PORT
 		fi
+		if [ -n "$notifyfifo" ] ; then
+			> $servicedir/$service_name/variables/NOTIFY_HOST
+			> $servicedir/$service_name/variables/NOTIFY_PORT
+			check_update_if_diff $servicedir/$service_name/variables/NOTIFY_FIFO   $notifyfifo
+		elif [ -n "$notifyhost" -a -n "$notifyport" ] ; then
+			> $servicedir/$service_name/variables/LCD_FIFO
+			check_update_if_diff $servicedir/$service_name/variables/NOTIFY_HOST   $notifyhost
+			check_update_if_diff $servicedir/$service_name/variables/NOTIFY_PORT   $notifyport
+		else
+			> $servicedir/$service_name/variables/NOTIFY_FIFO
+			> $servicedir/$service_name/variables/NOTIFY_HOST
+			> $servicedir/$service_name/variables/NOTIFY_PORT
+		fi
 		check_update_if_diff $servicedir/$service_name/variables/TIMEOUT    60
 		check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
 		check_update_if_diff $servicedir/$service_name/variables/USER      "root"
@@ -189,6 +202,19 @@ add_service()
 			> $servicedir/$service_name/variables/LCD_FIFO
 			> $servicedir/$service_name/variables/LCD_HOST
 			> $servicedir/$service_name/variables/LCD_PORT
+		fi
+		if [ -n "$notifyfifo" ] ; then
+			> $servicedir/$service_name/variables/NOTIFY_HOST
+			> $servicedir/$service_name/variables/NOTIFY_PORT
+			check_update_if_diff $servicedir/$service_name/variables/NOTIFY_FIFO   $notifyfifo
+		elif [ -n "$notifyhost" -a -n "$notifyport" ] ; then
+			> $servicedir/$service_name/variables/NOTIFY_FIFO
+			check_update_if_diff $servicedir/$service_name/variables/NOTIFY_HOST   $notifyhost
+			check_update_if_diff $servicedir/$service_name/variables/NOTIFY_PORT   $notifyport
+		else
+			> $servicedir/$service_name/variables/NOTIFY_FIFO
+			> $servicedir/$service_name/variables/NOTIFY_HOST
+			> $servicedir/$service_name/variables/NOTIFY_PORT
 		fi
 		check_update_if_diff $servicedir/$service_name/variables/MAXDAEMONS 10
 		check_update_if_diff $servicedir/$service_name/variables/USER      "$user"
@@ -507,6 +533,7 @@ usage()
 	echo "  --service_name=fclient|fserver\\"
 	echo "  --user=username --host=host --port=port\\"
 	echo "  --lcdhost=host --lcdport=port || --lcdfifo=fifo\\"
+	echo "  --notifyhost=host --notifyport=port || --notifyfifo=fifo\\"
 	echo "  --mdrive=mpd drive\\"
 	echo "  --add-service"
 	echo " or"
@@ -535,10 +562,13 @@ user=""
 lcdhost=""
 lcdport=""
 lcdfifo=""
+notifyhost=""
+notifyport=""
+notifyfifo=""
 prog_args="$0 $*"
 SYSTEM=$(uname -s)
 MDRIVE=""
-RCSID="# \$Id: create_service.in,v 1.59 2024-03-21 23:42:08+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.60 2024-04-21 23:12:22+05:30 Cprogrammer Exp mbhangui $"
 
 [ -f /etc/mpd.conf ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
 while test $# -gt 0; do
@@ -580,6 +610,15 @@ while test $# -gt 0; do
 	--lcdfifo=*)
 	lcdfifo=$optarg
 	;;
+	--notifyhost=*)
+	notifyhost=$optarg
+	;;
+	--notifyport=*)
+	notifyport=$optarg
+	;;
+	--notifyfifo=*)
+	notifyfifo=$optarg
+	;;
 
 	--add-service)
 	if [ -z "$servicedir" -o -z "$service_name" ] ; then
@@ -616,6 +655,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.60  2024-04-21 23:12:22+05:30  Cprogrammer
+# added desktop notification to notifyhost or notify-fifo
+#
 # Revision 1.59  2024-03-21 23:42:08+05:30  Cprogrammer
 # work without mpd
 # create FORCE_UMOUNT variable
