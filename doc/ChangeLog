@@ -5,10 +5,10 @@ Release 1.1 Start 30/06/2022 End --/--/----
 02. create_service: pass -n "" for fclient to use un-encrypted channel
 03. pistop.spec, debian/postinst: fix variables/.options for refreshsvc
 - 12/07/2022
-04. pistopstart: start systemd sound.service on startup
+04. pistopstart.in: start systemd sound.service on startup
 05. create_service: create MDRIVE variable for fclient, fserver
 - 13/07/2022
-06. pistopstart: fixed power off
+06. pistopstart.in: fixed power off
 07. create_service: added /sbin, /usr/sbin to PATH for shutdown to work
 08. create_service: modified /service/fclient/shutdown to run without
     POWER_OFF env variable
@@ -18,29 +18,29 @@ Release 1.1 Start 30/06/2022 End --/--/----
 - 27/07/2022
 11. create_service.in: updated for change in tcpserver -n option
 - 03/05/2023
-12. pistopstart: removed hardcoded systemctl path
+12. pistopstart.in: removed hardcoded systemctl path
 - 18/05/2023
-13. pistopstart: increased sleep duration if disk mount fails
+13. pistopstart.in: increased sleep duration if disk mount fails
 14. pistop.spec: updated SPEC file
 15. create_service: kill pistopstart script if running in shutdown
 - 26/06/2023
-16. pistopstart: Use MDRIVE from variables if not from /etc/mpd.conf
+16. pistopstart.in: Use MDRIVE from variables if not from /etc/mpd.conf
 - 28/06/2023
 17. pistopserver.c: display IP addresses
 18. pistopclient.c: added more info messages
-19. pistopstart: send startup/shutdown text to lcdhost running lcdDaemon from
+19. pistopstart.in: send startup/shutdown text to lcdhost running lcdDaemon from
     lcd-daemon package
 20. create_service: execute $HOME/.pistop/pistopstart in shutdown script
-21. pistopstart: use /proc/loadavg instead of uptime command
-22. pistopstart: use timeout for nc command
+21. pistopstart.in: use /proc/loadavg instead of uptime command
+22. pistopstart.in: use timeout for nc command
 - 29/06/2023
-23. pistopstart: use LCD_HOST if defined instead of lcdhost from /etc/hosts
+23. pistopstart.in: use LCD_HOST if defined instead of lcdhost from /etc/hosts
 24. create_service: added --lcdhost, --lcdport to create LCD_HOST, LCD_PORT
     env variables
 - 30/06/2023
 25. create_service: added --lcdfifo to create LCD_FIFO env variable
 26. host_status: script to send text to LCD display
-27. pistopstart: use host_status to send text to LCD display
+27. pistopstart.in: use host_status to send text to LCD display
 28. pistopserver.c: fixed shutdown
 - 04/07/2023
 29. pistopstart.in: Use umount -f -l to prevent hanging
@@ -51,18 +51,21 @@ Release 1.1 Start 30/06/2022 End --/--/----
 32. pistopstart.in, create_services: modified for config witout mpd
 - 21/03/2024
 33. create_services: Create FORCE_UMOUNT env variable
-34. pistopstart: Display umount method in log
+34. pistopstart.in: Display umount method in log
 - 23/03/2024
 34. host_status.in: add delay when resetting LCD display
 35. host_status.in: eliminate duplicate ip addresses
 - 27/03/2024
-36. pistopstart: umount MDrive without triggering autofs
-37. pistopstart: ignore sigpipe
+36. pistopstart.in: umount MDrive without triggering autofs
+37. pistopstart.in: ignore sigpipe
 - 21/04/2024
 38. create_services.in, host_status.in: added desktop notification to
     notifyhost or notify-fifo
 39. pistopstart.in: send PowerOff, MusicOff notification as desktop
     notification
+- 28/04/2024
+40. backup.in: added RSYNC_OPTIONS variable to pass options to rsync
+41. pistopstart.in: added more info statements
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022

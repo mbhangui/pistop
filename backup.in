@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: backup.in,v 1.7 2024-03-14 16:34:46+05:30 Cprogrammer Exp mbhangui $
+# $Id: backup.in,v 1.8 2024-04-28 12:25:27+05:30 Cprogrammer Exp mbhangui $
 #
 HOST=$(uname -n)
 if [ -z "$DEST" ] ; then
@@ -23,12 +23,19 @@ if [ -n "$BACKUP" -a -n "$DEST" ] ; then
 		if [ ! -d $DEST/backup/$HOST"$d" ] ; then
 			mkdir -p $DEST/backup/$HOST"$d"
 		fi
-		rsync -valptgomHE --delete $i $DEST/backup/$HOST"$d"
+		if [ -n "$RSYNC_OPTIONS" ] ; then
+			rsync "$RSYNC_OPTIONS" --delete $i $DEST/backup/$HOST"$d"
+		else
+			rsync -alptgomHE --delete $i $DEST/backup/$HOST"$d"
+		fi
 	done
 fi
 exit 0
 #
 # $Log: backup.in,v $
+# Revision 1.8  2024-04-28 12:25:27+05:30  Cprogrammer
+# added RSYNC_OPTIONS variable to pass options to rsync
+#
 # Revision 1.7  2024-03-14 16:34:46+05:30  Cprogrammer
 # transfer files with original directory into dest
 #
