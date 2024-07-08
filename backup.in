@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: backup.in,v 1.8 2024-04-28 12:25:27+05:30 Cprogrammer Exp mbhangui $
+# $Id: backup.in,v 1.9 2024-07-08 08:08:46+05:30 Cprogrammer Exp mbhangui $
 #
 HOST=$(uname -n)
 if [ -z "$DEST" ] ; then
@@ -28,11 +28,15 @@ if [ -n "$BACKUP" -a -n "$DEST" ] ; then
 		else
 			rsync -alptgomHE --delete $i $DEST/backup/$HOST"$d"
 		fi
+		echo "backup done for $i rsync status=$?"
 	done
 fi
 exit 0
 #
 # $Log: backup.in,v $
+# Revision 1.9  2024-07-08 08:08:46+05:30  Cprogrammer
+# display rsync status on exit
+#
 # Revision 1.8  2024-04-28 12:25:27+05:30  Cprogrammer
 # added RSYNC_OPTIONS variable to pass options to rsync
 #
