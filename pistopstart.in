@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.18 2024-04-28 12:32:14+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.19 2024-07-29 08:40:41+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -13,11 +13,21 @@ suicide()
 
 get_mpd_conf_value()
 {
-	if [ ! -f /etc/mpd.conf ] ; then
+	if [ ! -f @sysconfdir@/mpd.conf ] ; then
 		return 1
 	fi
     grep "^$1" @sysconfdir@/mpd.conf|awk '{print $2}' | \
     sed -e 's{"{{g'
+}
+
+get_mdrive()
+{
+	d1=$(grep -v '^#' @sysconfdir@/auto.master.d/mpd.autofs|awk '{print $1}')
+	d2=$(grep -v '^#' @sysconfdir@/auto.master.d/mpd.autofs|awk '{print $2}')
+	if [ -n "$d2" ] ; then
+		d3=$(grep -v '^#' $d2|awk '{print $1}')
+		echo "$d1/$d3"
+	fi
 }
 
 stop()
@@ -172,7 +182,7 @@ start()
 	mpd_was_down=0
 	autofs_was_down=0
 	mdrive_mounted=0
-	echo "Initializing $(uname -n) localtime $(date)" 1>&7 # running under tcpclient
+	echo "Initializing $(uname -n) MDRIVE [$MDRIVE] localtime $(date)" 1>&7 # running under tcpclient
 	while true
 	do
 		# 1. we assume we are running on Linux mostly
@@ -258,16 +268,18 @@ else
 	fi
 fi
 servicedir=@servicedir@
-[ -f /etc/mpd.conf ] && mpd_present=1 || mpd_present=0
-[ $mpd_present -eq 1 ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
-if [ -n "$music_dir" ] ; then
-	MDRIVE=$(dirname $music_dir) 
-elif [ -d /MDrive ] ; then
-	MDRIVE=/MDrive
-elif [ -d /var/lib/mpd/MDrive/backup ] ; then
-	MDRIVE=/var/lib/mpd/MDrive
-elif [ -d /home/pi/MDrive/backup ] ; then
-	MDRIVE=/home/pi/MDrive
+[ -f @sysconfdir@/mpd.conf -o -L @sysconfdir@/mpd.conf ] && mpd_present=1 || mpd_present=0
+[ $mpd_present -eq 1 ] && MDRIVE=$(get_mdrive) || MDRIVE=""
+if [ -z "$MDRIVE" ] ; then
+	if [ -d /MDrive ] ; then
+		MDRIVE=/MDrive
+	elif [ -d /autofs/MDrive ] ; then
+		MDRIVE=/autofs/MDrive
+	elif [ -d /var/lib/mpd/MDrive/backup ] ; then
+		MDRIVE=/var/lib/mpd/MDrive
+	elif [ -d /home/pi/MDrive/backup ] ; then
+		MDRIVE=/home/pi/MDrive
+	fi
 fi
 [ -n "$MDRIVE" ] && echo "MDrive is $MDRIVE" || echo "MDrive not found"
 
@@ -287,6 +299,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.19  2024-07-29 08:40:41+05:30  Cprogrammer
+# get MDRIVE from /etc/auto.master.d/mpd.autofs and /etc/autofs.mounts
+#
 # Revision 1.18  2024-04-28 12:32:14+05:30  Cprogrammer
 # added more info statements
 #

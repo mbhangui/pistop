@@ -68,6 +68,9 @@ Release 1.1 Start 30/06/2022 End --/--/----
 41. pistopstart.in: added more info statements
 - 08/07/2024
 42. backup.in: display rsync status on exit
+- 29/07/2024
+43. pistopstart.in: get MDRIVE from /etc/auto.master.d/mpd.autofs and
+    /etc/autofs.mounts
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022
