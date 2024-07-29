@@ -95,3 +95,5 @@ client.in
 pistopserver.1
 conf-release
 host_status
+config.guess
+config.sub

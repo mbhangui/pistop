@@ -1,5 +1,9 @@
 /*
  * $Log: pistopclient.c,v $
+ * Revision 1.4  2024-07-29 22:05:23+05:30  Cprogrammer
+ * removed unused function timeoutread
+ * use timeoutwrite from libqmail
+ *
  * Revision 1.3  2024-01-29 09:51:15+05:30  Cprogrammer
  * remove double newline
  *
@@ -29,6 +33,7 @@
 #include <sig.h>
 #include <fmt.h>
 #include <sgetopt.h>
+#include <timeoutwrite.h>
 
 #define FATAL             "pistopclient: fatal: "
 #define SELECTTIMEOUT     5
@@ -109,56 +114,6 @@ sigterm()
 	substdio_flush(subfdout);
 	substdio_flush(subfderr);
 	_exit(1);
-}
-
-int
-timeoutread(t, fd, buf, len)
-	int             t;
-	int             fd;
-	char           *buf;
-	int             len;
-{
-	fd_set          rfds;
-	struct timeval  tv;
-
-	tv.tv_sec = t;
-	tv.tv_usec = 0;
-
-	FD_ZERO(&rfds);
-	FD_SET(fd, &rfds);
-
-	if (select(fd + 1, &rfds, (fd_set *) 0, (fd_set *) 0, &tv) == -1)
-		return -1;
-	if (FD_ISSET(fd, &rfds))
-		return read(fd, buf, len);
-
-	errno = error_timeout;
-	return -1;
-}
-
-int
-timeoutwrite(t, fd, buf, len)
-	int             t;
-	int             fd;
-	char           *buf;
-	int             len;
-{
-	fd_set          wfds;
-	struct timeval  tv;
-
-	tv.tv_sec = t;
-	tv.tv_usec = 0;
-
-	FD_ZERO(&wfds);
-	FD_SET(fd, &wfds);
-
-	if (select(fd + 1, (fd_set *) 0, &wfds, (fd_set *) 0, &tv) == -1)
-		return -1;
-	if (FD_ISSET(fd, &wfds))
-		return write(fd, buf, len);
-
-	errno = error_timeout;
-	return -1;
 }
 
 void

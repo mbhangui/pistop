@@ -71,6 +71,9 @@ Release 1.1 Start 30/06/2022 End --/--/----
 - 29/07/2024
 43. pistopstart.in: get MDRIVE from /etc/auto.master.d/mpd.autofs and
     /etc/autofs.mounts
+44. pistopclient.c: use timeoutwrite from libqmail
+45. pistopclient.c: removed unused function timeoutread
+46. Fixed configure.ac for OSX
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022
