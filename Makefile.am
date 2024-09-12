@@ -44,9 +44,6 @@ edit = sed \
 create_service: create_service.in
 	$(edit) $@.in > $@
 	chmod +x $@
-client: client.in
-	$(edit) $@.in > $@
-	chmod +x $@
 pistopstart: pistopstart.in
 	$(edit) $@.in > $@
 	chmod +x $@

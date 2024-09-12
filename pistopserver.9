@@ -1,3 +1,4 @@
+.\" vim: tw=75
 .TH pistopclient 1 "June 30, 2022" "manual"
 .SH NAME
 .PP
@@ -20,20 +21,29 @@ EXAMPLE.
 \fBpistopserver\fR needs to be run with fd 0 and 1 connected to some TCP/IP
 port. This can be done using \fBtcpserver\fR(1), \fBxinetd\fR(1). It can be
 any unused port, but having a port greater than 1024 will allow
-\fBpistopserver\fR to be run as non-root user.  Similarly
-\fBpistopserver\fR needs to use TCP/IP port connected to port 5555, with fd
-6 reading from the network and fd 7 writing to the network. This can be
-easily done by using tcpclient(1). \fBpistopclient\fR must be run under
-root if it has to start/stop system services. It will look for a script
-named \fBpistopstart\fR under $HOME/.pistop directory. If this script is
-not found, it will use \fBpistopstart\fR script in @pistoplibexecdir@. The
-default \fBpistopstart\fR script starts/stops autofs and mpd service on
-startup/shutdown and additionally mounts NFS/samba shares.
-\fBpistopstart\fR script expects either \fIstart\fR or \fIstop\fR
-arguments. If you have the script/program in $HOME/.pistop it will get
-updated with the latest script in @pistoplibexecdir@. To prevent your
-script from getting automatically upgraded, create a file named
-\fI.pistopstart.noovewrite\fR in $HOME/.pistop directory.
+\fBpistopserver\fR to be run as non-root user. Similarly \fBpistopclient\fR
+needs to be connected to some TCP/IP port, with fd 6 reading from the
+network and fd 7 writing to the network. This can be easily done by using
+\fBtcpclient\fR(1). \fBpistopclient\fR must be run under root if it has to
+start/stop system services. It will look for a script named
+\fBpistopstart\fR under \fI$HOME/.pistop\fR directory. If this script is
+not found, it will use \fBpistopstart\fR script in
+\fI@pistoplibexecdir@\fR. The default \fBpistopstart\fR script starts/stops
+autofs and mpd service on startup/shutdown and additionally mounts
+NFS/samba shares. \fBpistopstart\fR script expects either \fBstart\fR or
+\fBstop\fR arguments. If you have the script/program in \fI$HOME/.pistop\fR
+it will get updated with the latest script in \fI@pistoplibexecdir@\fR. To
+prevent your script from getting automatically upgraded, create a file
+named \fI.pistopstart.noovewrite\fR in \fI$HOME/.pistop\fR directory.
+\fBpistopstart\fR scripts executes the following user defined scripts (if
+present) during mount and unmount of NFS/samba shares
+
+.EX
+1. \fI$HOME/.pistop/pre_mount\fR    - before auto-mounting a share
+2. \fI$HOME/.pistop/post_mount\fR   - after  auto-mounting a share
+3. \fI$HOME/.pistop/pre_unmount\fR  - before unmounting an auto-mounted share
+4. \fI$HOME/.pistop/post_unmount\fR - after  unmounting an auto-mounted share
+.EE
 
 You can have \fBpistopserver\fR and \fBpistopclient\fR to be automatically
 started on bootup by creating appropriate configuration in rc, systemd(1)
@@ -69,10 +79,14 @@ what you need to do
 
 .EX
 1. run pistopserver on the host having the mpd database under tcpserver(1)
-   tcpserver -vDHRo 0 5555 @pistoplibexecdir@/pistopserver
+
+   $ tcpserver -vDHRo 0 5555 /usr/libexec/pistop/pistopserver
+
 2. run pistopclient on all clients with IP of the above tcpserver host as
-   \fIipaddr\fR
-   tcpclient -vDHR -t 300 \fIipaddr\fR 5555 @pistoplibexecdir@/pistopclient
+   \fIipaddr\fR. Run this with root privileges so that it can start/stop
+   system services
+
+   $ sudo tcpclient -vDHR -t 300 \fIipaddr\fR 5555 /usr/libexec/pistop/pistopclient
 .EE
 
 .SH SEE ALSO

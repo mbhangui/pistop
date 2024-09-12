@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.19 2024-07-29 08:40:41+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.20 2024-09-12 08:55:42+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -59,6 +59,10 @@ stop()
 	fi
 	if [ -n "$MDRIVE" ] ; then
 		count=1
+		if [ -x $HOME/.pistop/pre_unmount ] ; then
+			echo "Executing user command pre_unmount"
+			$HOME/.pistop/pre_unmount
+		fi
 		while true
 		do
 			if [ -n "$POWER_OFF" -a -n "$FORCE_UMOUNT" ] ; then
@@ -91,6 +95,10 @@ stop()
 			count=`expr $count + 1`
 			sleep 1
 		done
+		if [ -x $HOME/.pistop/post_unmount ] ; then
+			echo "Executing user command post_unmount"
+			$HOME/.pistop/post_unmount
+		fi
 	fi
 	if [ -x $systemctl ] ; then
 		while true
@@ -194,6 +202,10 @@ start()
 					give_up
 					break
 				fi
+				if [ $count -eq 0 -a -x $HOME/.pistop/pre_mount ] ; then
+					echo "Executing user command pre_mount"
+					$HOME/.pistop/pre_mount
+				fi
 				count=`expr $count + 1`
 				autofs_was_down=1
 				echo "$systemctl start autofs.service"
@@ -217,6 +229,10 @@ start()
 			echo "MDrive [$MDRIVE] not yet mounted"
 			sleep 5
 			continue
+		fi
+		if [ $mdrive_mounted -eq 0 -a -x $HOME/.pistop/post_mount ] ; then
+			echo "Executing user command post_mount"
+			$HOME/.pistop/post_mount
 		fi
 		[ $mdrive_mounted -eq 0 ] && mdrive_mounted=1 && echo "MDrive mounted"
 		if [ $mpd_present -eq 1 ] ; then
@@ -299,6 +315,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.20  2024-09-12 08:55:42+05:30  Cprogrammer
+# added pre_unmount, post_unmount, pre_mount, post_mount feature
+#
 # Revision 1.19  2024-07-29 08:40:41+05:30  Cprogrammer
 # get MDRIVE from /etc/auto.master.d/mpd.autofs and /etc/autofs.mounts
 #
