@@ -40,7 +40,7 @@ jobs:
         make clean; /bin/rm -rf .git ../libqmail autom4te.cache
         make -C debian;make pistop.spec
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: pistop
         path: ${{ github.workspace }}
