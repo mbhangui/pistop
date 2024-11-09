@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.61 2024-10-25 16:39:17+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.62 2024-11-10 00:11:52+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -339,15 +339,16 @@ add_service()
 		chmod +x $servicedir/$service_name/run
 		(
 		echo "#!/bin/sh"
+		echo "exec 2>&1"
 		echo "killall pistopstart"
 		echo "sleep 1"
 		echo "USER=\`cat variables/USER\`"
 		echo "HOME=\`cat variables/HOME\`"
 		echo "if [ -x \$HOME/.pistop/pistopstart ] ; then"
-		echo "	exec envdir variables setuidgid \$USER \\"
+		echo "  exec envdir variables setuidgid \$USER \\"
 		echo "    \$HOME/.pistop/pistopstart stop"
 		echo "else"
-		echo "	exec envdir variables setuidgid \$USER \\"
+		echo "  exec envdir variables setuidgid \$USER \\"
 		echo "    @pistoplibexecdir@/pistopstart stop"
 		echo "fi"
 		) > $servicedir/$service_name/shutdown
@@ -572,7 +573,7 @@ notifyfifo=""
 prog_args="$0 $*"
 SYSTEM=$(uname -s)
 MDRIVE=""
-RCSID="# \$Id: create_service.in,v 1.61 2024-10-25 16:39:17+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.62 2024-11-10 00:11:52+05:30 Cprogrammer Exp mbhangui $"
 
 [ -f /etc/mpd.conf ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
 while test $# -gt 0; do
@@ -659,6 +660,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.62  2024-11-10 00:11:52+05:30  Cprogrammer
+# redirect errors to log
+#
 # Revision 1.61  2024-10-25 16:39:17+05:30  Cprogrammer
 # fixed setting of HOME, USER in shutdown script
 #
