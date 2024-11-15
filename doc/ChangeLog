@@ -78,6 +78,9 @@ Release 1.1 Start 30/06/2022 End --/--/----
 47. create_services: fixed setting of HOME, USER in shutdown script
 - 10/11/2024
 48. create_services: remove POWER_OFF variable in shutdown script
+- 15/11/2024
+49. create_services: use env variables directory in supervise run scripts
+    (new feature of daemontools 1.1.6)
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022

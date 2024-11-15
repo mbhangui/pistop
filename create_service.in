@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.63 2024-11-10 00:53:04+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.64 2024-11-15 09:26:18+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -306,10 +306,6 @@ add_service()
 		echo ""
 		echo "exec 2>&1"
 		echo
-		echo "USER=\`cat variables/USER\`"
-		echo "HOME=\`cat variables/HOME\`"
-		echo "HOST=\`cat variables/HOST\`"
-		echo "PORT=\`cat variables/PORT\`"
 		echo "for i in pistopstart"
 		echo "do"
 		echo "  if [ -f \$HOME/.pistop/.\$i.nooverwrite ] ; then"
@@ -327,9 +323,9 @@ add_service()
 		echo "  bash -c \"</dev/tcp/\$HOST/\$PORT\" 2>/dev/null"
 		echo "  if [ \$? -eq 0 ] ; then"
 		echo "    echo \"\$HOST:\$PORT is alive\""
-		echo "    exec /usr/bin/envdir variables sh -c \"\\"
-		echo "      exec /usr/bin/setuidgid \$USER /usr/bin/tcpclient -vDHR \\"
-		echo "        -t \\\$TIMEOUT \$HOST \$PORT @pistoplibexecdir@/pistopclient 2>&1\""
+		echo "    exec /usr/bin/envdir variables /usr/bin/setuidgid \$USER \\"
+		echo "      /usr/bin/tcpclient -vDHR -t \$TIMEOUT \$HOST \$PORT \\"
+		echo "      @pistoplibexecdir@/pistopclient 2>&1"
 		echo "  else"
 		echo "    echo \"\$HOST:\$PORT is down. Sleeping for 30 seconds...\""
 		echo "    sleep 30"
@@ -342,8 +338,6 @@ add_service()
 		echo "exec 2>&1"
 		echo "killall pistopstart"
 		echo "sleep 1"
-		echo "USER=\`cat variables/USER\`"
-		echo "HOME=\`cat variables/HOME\`"
 		echo "if [ -x \$HOME/.pistop/pistopstart ] ; then"
 		echo "  exec envdir variables env POWER_OFF=\"\" setuidgid \$USER \\"
 		echo "    \$HOME/.pistop/pistopstart stop"
@@ -364,22 +358,21 @@ add_service()
 		echo ""
 		echo "exec 2>&1"
 		echo ""
-		echo "exec /usr/bin/envdir variables sh -c \""
-		echo "  @pistoplibexecdir@/backup"
-		echo "  if [ -x $MDRIVE/bin/boot_sound ] ; then"
-		echo "    $MDRIVE/bin/boot_sound >/dev/null 2>&1"
-		echo "  fi"
-		echo "  systemctl status mpd >/dev/null 2>&1"
-		echo "  if [ \$? -ne 0 ] ; then"
-		echo "    systemctl start mpd"
-		echo "  fi"
+		echo "@pistoplibexecdir@/backup"
+		echo "if [ -x $MDRIVE/bin/boot_sound ] ; then"
+		echo "  $MDRIVE/bin/boot_sound >/dev/null 2>&1"
+		echo "fi"
+		echo "systemctl status mpd >/dev/null 2>&1"
+		echo "if [ \$? -ne 0 ] ; then"
+		echo "  systemctl start mpd"
+		echo "fi"
 		echo ""
-		echo "  @pistoplibexecdir@/host_status \\\"3 0 3:\$(uname -n) PowerOn\\\""
+		echo "@pistoplibexecdir@/host_status \\\"3 0 3:\$(uname -n) PowerOn\\\""
 		echo ""
-		echo "  exec /usr/bin/tcpserver -vDHRo -l 0 \\"
-		echo "    -c variables/MAXDAEMONS -b \\\$MAXDAEMONS \\"
-		echo "    -u \\\$UID -g \\\$GID \\\$HOST \\\$PORT \\"
-		echo "  @pistoplibexecdir@/pistopserver\""
+		echo "exec /usr/bin/tcpserver -vDHRo -l 0 \\"
+		echo "  -c variables/MAXDAEMONS -b \$MAXDAEMONS \\"
+		echo "  -u \$UID -g \$GID \$HOST \$PORT \\"
+		echo "@pistoplibexecdir@/pistopserver"
 		) > $servicedir/$service_name/run
 		chmod +x $servicedir/$service_name/run
 		(
@@ -395,11 +388,10 @@ add_service()
 		echo ""
 		echo "exec 2>&1"
 		echo
-		echo "exec /usr/bin/envdir ./variables sh -c \""
-		echo "exec /usr/bin/softlimit -m \\\$SOFT_MEM -o 1024 \\"
-		echo "  /usr/bin/tcpserver -vHRo -l \\\$LOCALIP \\"
-		echo "  -c ./variables/MAXDAEMONS -C \\\$MAXPERIP -b \\\$MAXDAEMONS \\"
-		echo " \\\$LOCALIP \\\$PORT /usr/bin/rsync -v --daemon --no-detach --log-file=/dev/fd/2\""
+		echo "exec /usr/bin/softlimit -m \$SOFT_MEM -o 1024 \\"
+		echo "  /usr/bin/tcpserver -vHRo -l \$LOCALIP \\"
+		echo "  -c ./variables/MAXDAEMONS -C \$MAXPERIP -b \$MAXDAEMONS \\"
+		echo " \$LOCALIP \$PORT /usr/bin/rsync -v --daemon --no-detach --log-file=/dev/fd/2"
 		) > $servicedir/$service_name/run
 		chmod +x $servicedir/$service_name/run
 		touch $servicedir/$service_name/down
@@ -573,7 +565,7 @@ notifyfifo=""
 prog_args="$0 $*"
 SYSTEM=$(uname -s)
 MDRIVE=""
-RCSID="# \$Id: create_service.in,v 1.63 2024-11-10 00:53:04+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.64 2024-11-15 09:26:18+05:30 Cprogrammer Exp mbhangui $"
 
 [ -f /etc/mpd.conf ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
 while test $# -gt 0; do
@@ -660,6 +652,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.64  2024-11-15 09:26:18+05:30  Cprogrammer
+# changes for latest daemontools 1.1.6
+#
 # Revision 1.63  2024-11-10 00:53:04+05:30  Cprogrammer
 # remove POWER_OFF variable during shutdown
 #
