@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.64 2024-11-15 09:26:18+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.65 2024-12-27 19:00:00+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -127,6 +127,9 @@ add_service()
 	fi
 	if [ "$service_name" = "fclient" ] ; then
 		mkdir -p $home/.pistop
+		if [ ! -d /root/.pistop -a ! -L /root/.pistop ] ; then
+			ln -sf $home/.pistop /root/.pistop
+		fi
 		for i in pistopstart
 		do
 			if [ ! -f $home/.pistop/$i ] ; then
@@ -565,7 +568,7 @@ notifyfifo=""
 prog_args="$0 $*"
 SYSTEM=$(uname -s)
 MDRIVE=""
-RCSID="# \$Id: create_service.in,v 1.64 2024-11-15 09:26:18+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.65 2024-12-27 19:00:00+05:30 Cprogrammer Exp mbhangui $"
 
 [ -f /etc/mpd.conf ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
 while test $# -gt 0; do
@@ -652,6 +655,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.65  2024-12-27 19:00:00+05:30  Cprogrammer
+# link /root/.pistop to $HOME/.pistop
+#
 # Revision 1.64  2024-11-15 09:26:18+05:30  Cprogrammer
 # changes for latest daemontools 1.1.6
 #
