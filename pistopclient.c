@@ -1,5 +1,8 @@
 /*
  * $Log: pistopclient.c,v $
+ * Revision 1.5  2024-12-27 18:47:59+05:30  Cprogrammer
+ * Fixed logic when $HOME/.pistop doesn't exist
+ *
  * Revision 1.4  2024-07-29 22:05:23+05:30  Cprogrammer
  * removed unused function timeoutread
  * use timeoutwrite from libqmail
@@ -173,9 +176,9 @@ main(int argc, char **argv)
 		errf("HOME not set\n");
 		_exit(100);
 	}
-	if (chdir(ptr) == -1 || chdir(".pistop")== -1 )
-		strerr_die4sys(111, FATAL, "chdir: ", ptr, "/.pistopstart: ");
-	if (!access("pistopstart", X_OK)) {
+	if (chdir(ptr) == -1)
+		strerr_die4sys(111, FATAL, "chdir: ", ptr, ": ");
+	if (!chdir(".pistop") || !access("pistopstart", X_OK)) {
 		if (!stralloc_copys(&pistopstart, ptr) ||
 				!stralloc_catb(&pistopstart, "/.pistop/pistopstart", 20) ||
 				!stralloc_0(&pistopstart))
