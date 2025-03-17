@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.20 2024-09-12 08:55:42+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.21 2025-03-18 00:22:05+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -33,9 +33,9 @@ get_mdrive()
 stop()
 {
 	if [ -n "$POWER_OFF" ] ; then
-		echo "Shutting down $(uname -n) localtime $(date)" 1>&7
+		echo "Shutting down $(uname -n) localtime $(date)"
 	else
-		echo "stopping $(uname -n) localtime $(date)" 1>&7
+		echo "stopping $(uname -n) localtime $(date)"
 	fi
 	if [ $mpd_present -eq 1 ] ; then
 		count=1
@@ -126,11 +126,11 @@ stop()
 		@pistoplibexecdir@/host_status MusicOff
 	fi
 	if [ -n "$POWER_OFF" ] ; then
-		echo "shutdown $(uname -n) localtime $(date)" 1>&7
+		echo "shutdown $(uname -n) localtime $(date)"
 		echo "Completed STOP Service and shutdown in progress..."
 		shutdown -h now
 	else
-		echo "stopped $(uname -n) localtime $(date)" 1>&7
+		echo "stopped $(uname -n) localtime $(date)"
 		echo "Completed STOP Service"
 	fi
 }
@@ -315,6 +315,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.21  2025-03-18 00:22:05+05:30  Cprogrammer
+# remove redirection to descriptor 7 during shutdown
+#
 # Revision 1.20  2024-09-12 08:55:42+05:30  Cprogrammer
 # added pre_unmount, post_unmount, pre_mount, post_mount feature
 #
