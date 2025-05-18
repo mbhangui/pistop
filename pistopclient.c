@@ -1,5 +1,8 @@
 /*
  * $Log: pistopclient.c,v $
+ * Revision 1.6  2025-05-18 21:44:29+05:30  Cprogrammer
+ * fix sigterm prototype for gcc14
+ *
  * Revision 1.5  2024-12-27 18:47:59+05:30  Cprogrammer
  * Fixed logic when $HOME/.pistop doesn't exist
  *
@@ -112,7 +115,7 @@ die_alarm()
 }
 
 void
-sigterm()
+sigterm(int x)
 {
 	substdio_flush(subfdout);
 	substdio_flush(subfderr);

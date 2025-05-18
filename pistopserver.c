@@ -1,5 +1,8 @@
 /*
  * $Log: pistopserver.c,v $
+ * Revision 1.8  2025-05-18 21:44:41+05:30  Cprogrammer
+ * fix sigterm proto for gcc14
+ *
  * Revision 1.7  2023-06-30 23:08:32+05:30  Cprogrammer
  * display remoteip
  * fixed shutdown
@@ -71,7 +74,7 @@ out(char *str)
 }
 
 void
-sigterm()
+sigterm(int x)
 {
 	substdio_put(subfdout, "shutdown\n", 9);
 	substdio_flush(subfdout);
