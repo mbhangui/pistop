@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: pistopstart.in,v 1.21 2025-03-18 00:22:05+05:30 Cprogrammer Exp mbhangui $
+# $Id: pistopstart.in,v 1.22 2025-11-18 08:34:51+05:30 Cprogrammer Exp mbhangui $
 #
 
 systemctl=$(which systemctl)
@@ -17,7 +17,7 @@ get_mpd_conf_value()
 		return 1
 	fi
     grep "^$1" @sysconfdir@/mpd.conf|awk '{print $2}' | \
-    sed -e 's{"{{g'
+		sed -e 's{"{{g'
 }
 
 get_mdrive()
@@ -69,14 +69,14 @@ stop()
 				if [ $count -eq 1 ] ; then
 					echo "Force Unmounting MDrive with lazy option"
 				fi
-				[ $count -eq 1 ] && echo "umount -f -l $MDRIVE"
-				umount -f -l $MDRIVE >/dev/null 2>&1
+				[ $count -eq 1 ] && echo "umount -fl $MDRIVE"
+				umount -fl $MDRIVE
 			else
 				if [ $count -eq 1 ] ; then
 					echo "Force Unmounting MDrive"
 				fi
-				[ $count -eq 1 ] && echo "umount -f -l $MDRIVE"
-				umount -f $MDRIVE >/dev/null 2>&1
+				[ $count -eq 1 ] && echo "umount -f $MDRIVE"
+				umount -f $MDRIVE
 			fi
 			if [ $? -eq 0 -o $count -eq 60 ] ; then
 				if [ $? -eq 0 ] ; then
@@ -86,7 +86,7 @@ stop()
 				fi
 				break
 			fi
-			drive_mounted=$(df -k |grep MDrive)
+			drive_mounted=$(df -k|grep MDrive)
 			if [ -z "$drive_mounted" ] ; then
 				echo "unmounted MDrive"
 				break
@@ -315,6 +315,9 @@ esac
 
 #
 # $Log: pistopstart.in,v $
+# Revision 1.22  2025-11-18 08:34:51+05:30  Cprogrammer
+# display umount error in logs
+#
 # Revision 1.21  2025-03-18 00:22:05+05:30  Cprogrammer
 # remove redirection to descriptor 7 during shutdown
 #
