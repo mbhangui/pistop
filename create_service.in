@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.65 2024-12-27 19:00:00+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.66 2025-12-11 20:03:20+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -307,6 +307,7 @@ add_service()
 		echo "#!/bin/bash"
 		echo "# $prog_args"
 		echo ""
+		echo "trap \"exit 0\" 15"
 		echo "exec 2>&1"
 		echo
 		echo "for i in pistopstart"
@@ -320,11 +321,13 @@ add_service()
 		echo "  fi"
 		echo "done"
 		echo 
+		echo "/bin/rm -f /tmp/fclient.shutdown"
 		echo "echo \"Started fclient service\""
 		echo "while true"
 		echo "do"
 		echo "  bash -c \"</dev/tcp/\$HOST/\$PORT\" 2>/dev/null"
 		echo "  if [ \$? -eq 0 ] ; then"
+		echo "    touch /tmp/fclient.shutdown"
 		echo "    echo \"\$HOST:\$PORT is alive\""
 		echo "    exec /usr/bin/envdir variables /usr/bin/setuidgid \$USER \\"
 		echo "      /usr/bin/tcpclient -vDHR -t \$TIMEOUT \$HOST \$PORT \\"
@@ -332,6 +335,9 @@ add_service()
 		echo "  else"
 		echo "    echo \"\$HOST:\$PORT is down. Sleeping for 30 seconds...\""
 		echo "    sleep 30"
+		echo "    if [ \$? -ne 0 ] ; then"
+		echo "      break"
+		echo "    fi"
 		echo "  fi"
 		echo "done"
 		) > $servicedir/$service_name/run
@@ -339,8 +345,15 @@ add_service()
 		(
 		echo "#!/bin/sh"
 		echo "exec 2>&1"
+		echo "if [ ! -f /tmp/fclient.shutdown ] ; then"
+		echo "  /bin/rm -f /tmp/fclient.shutdown"
+		echo "  exit 0"
+		echo "fi"
+		echo "echo \"Shutting down fclient\" 1>&2"
+		echo "rppid=\$(pgrep -P \$PPID | grep -v \$\$)"
+		echo "kill -9 \$(pgrep -P \$rppid)"
 		echo "killall pistopstart"
-		echo "sleep 1"
+		echo "/bin/rm -f /tmp/fclient.shutdown"
 		echo "if [ -x \$HOME/.pistop/pistopstart ] ; then"
 		echo "  exec envdir variables env POWER_OFF=\"\" setuidgid \$USER \\"
 		echo "    \$HOME/.pistop/pistopstart stop"
@@ -568,7 +581,7 @@ notifyfifo=""
 prog_args="$0 $*"
 SYSTEM=$(uname -s)
 MDRIVE=""
-RCSID="# \$Id: create_service.in,v 1.65 2024-12-27 19:00:00+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.66 2025-12-11 20:03:20+05:30 Cprogrammer Exp mbhangui $"
 
 [ -f /etc/mpd.conf ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
 while test $# -gt 0; do
@@ -655,6 +668,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.66  2025-12-11 20:03:20+05:30  Cprogrammer
+# faster shutdown script
+#
 # Revision 1.65  2024-12-27 19:00:00+05:30  Cprogrammer
 # link /root/.pistop to $HOME/.pistop
 #
