@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: host_status.in,v 1.3 2024-04-21 23:31:08+05:30 Cprogrammer Exp mbhangui $
+# $Id: host_status.in,v 1.4 2026-01-03 21:55:15+05:30 Cprogrammer Exp mbhangui $
 #
 
 set_command1()
@@ -52,7 +52,7 @@ set_command2()
 		if [ -z "$NOTIFY_PORT" ] ; then
 			NOTIFY_PORT=1807
 		fi
-		cmd2="nc -u $NOTIFY_HOST $NOTIFY_PORT"
+		cmd2="nc -w 1 -u $NOTIFY_HOST $NOTIFY_PORT"
 		return 0
 	fi
 
@@ -76,7 +76,7 @@ set_command2()
 			NOTIFY_PORT=1807
 		fi
 		if [ -n "$notifyhost" ] ; then
-			cmd2="nc -u $notifyhost $NOTIFY_PORT"
+			cmd2="nc -w 1 -u $notifyhost $NOTIFY_PORT"
 			return 0
 		fi
 	fi
@@ -152,6 +152,9 @@ esac
 
 #
 # $Log: host_status.in,v $
+# Revision 1.4  2026-01-03 21:55:15+05:30  Cprogrammer
+# use timeout for nc command
+#
 # Revision 1.3  2024-04-21 23:31:08+05:30  Cprogrammer
 # added desktop notification to notifyhost or notify-fifo
 #

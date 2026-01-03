@@ -92,6 +92,8 @@ Release 1.1 Start 30/06/2022 End --/--/----
 54. pistopstart.in: display umount error in logs
 - 11/12/2025
 55. create_service: faster shutdown script
+- 03/01/2026
+56. host_status: fix timeout for nc command
 
 * Thu Jun 30 2022 18:10:06 IST Manvendra Bhangui <pistop@indimail.org> 1.0-1.1%{?dist}
 Release 1.0 Start 28/08/2020 End 30/06/2022
