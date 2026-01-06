@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: create_service.in,v 1.66 2025-12-11 20:03:20+05:30 Cprogrammer Exp mbhangui $
+# $Id: create_service.in,v 1.67 2026-01-06 17:24:53+05:30 Cprogrammer Exp mbhangui $
 #
 
 check_update_if_diff()
@@ -350,8 +350,13 @@ add_service()
 		echo "  exit 0"
 		echo "fi"
 		echo "echo \"Shutting down fclient\" 1>&2"
-		echo "rppid=\$(pgrep -P \$PPID | grep -v \$\$)"
-		echo "kill -9 \$(pgrep -P \$rppid)"
+		echo "rppid=\"\$(pgrep -P \$PPID | grep -v \$\$)\""
+		echo "if [ -n \"\$rppid\" ] ; then"
+		echo "  pids=\"\$(pgrep -P \$rppid)\""
+		echo "  if [ -n \"\$pids\" ] ; then"
+		echo "    kill -9 \$pids"
+		echo "  fi"
+		echo "fi"
 		echo "killall pistopstart"
 		echo "/bin/rm -f /tmp/fclient.shutdown"
 		echo "if [ -x \$HOME/.pistop/pistopstart ] ; then"
@@ -581,7 +586,7 @@ notifyfifo=""
 prog_args="$0 $*"
 SYSTEM=$(uname -s)
 MDRIVE=""
-RCSID="# \$Id: create_service.in,v 1.66 2025-12-11 20:03:20+05:30 Cprogrammer Exp mbhangui $"
+RCSID="# \$Id: create_service.in,v 1.67 2026-01-06 17:24:53+05:30 Cprogrammer Exp mbhangui $"
 
 [ -f /etc/mpd.conf ] && music_dir=$(get_mpd_conf_value music_dir) || music_dir=""
 while test $# -gt 0; do
@@ -668,6 +673,9 @@ while test $# -gt 0; do
 done
 #
 # $Log: create_service.in,v $
+# Revision 1.67  2026-01-06 17:24:53+05:30  Cprogrammer
+# check for empty pid in shutdown script
+#
 # Revision 1.66  2025-12-11 20:03:20+05:30  Cprogrammer
 # faster shutdown script
 #

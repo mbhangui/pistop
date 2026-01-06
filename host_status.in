@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: host_status.in,v 1.4 2026-01-03 21:55:15+05:30 Cprogrammer Exp mbhangui $
+# $Id: host_status.in,v 1.5 2026-01-06 08:05:40+05:30 Cprogrammer Exp mbhangui $
 #
 
 set_command1()
@@ -30,7 +30,7 @@ set_command1()
 		if [ -n "$LCD_HOST" ] ; then
 			lcdhost=$LCD_HOST
 		else
-			lcdhost=$(grep lcdhost /etc/hosts|awk '{print $1}')
+			lcdhost=$(getent hosts lcdhost | awk '{print $1}' | head -1)
 		fi
 		if [ -z "$LCD_PORT" ] ; then
 			LCD_PORT=1806
@@ -152,6 +152,9 @@ esac
 
 #
 # $Log: host_status.in,v $
+# Revision 1.5  2026-01-06 08:05:40+05:30  Cprogrammer
+# use getent instead of grep to find out lcdhost ip
+#
 # Revision 1.4  2026-01-03 21:55:15+05:30  Cprogrammer
 # use timeout for nc command
 #
